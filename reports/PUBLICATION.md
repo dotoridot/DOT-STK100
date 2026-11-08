@@ -8,4 +8,4 @@
 
 GitHub 연결로 dotoridot/DOT-STK100 저장소 생성, 소유자 ID 50072371, public 상태와 기본 브랜치 main을 확인했다. 파일 업로드는 후속 단계다.
 
-실제 업로드 확인: 2026-11-08에 첫 공개 커밋 3cfe7978cf67f03a765e70350966ab3fedd6f458의 65개 파일과 로컬 원본의 Git blob SHA 일치를 확인했다. 이어 사용자 요청에 따라 저장소 이름을 DOT-STK100으로 변경했고 public 상태를 재확인했다. 저장소 URL: https://github.com/dotoridot/DOT-STK100 . 이름 변경 반영본은 후속 커밋에 포함한다.
+실제 업로드 확인: 2026-11-08에 첫 공개 커밋 3cfe7978cf67f03a765e70350966ab3fedd6f458의 65개 파일과 로컬 원본의 Git blob SHA 일치를 확인했다. 이어 사용자 요청에 따라 저장소 이름을 DOT-STK100으로 변경했고 public 상태를 재확인했다. 저장소 URL: https://github.com/dotoridot/DOT-STK100 . 이름 변경 반영본은 커밋 865e6fd6fb7909e3e1ecd9e05f1b392bc5d3e7e5에 포함했다. 이전 YUPK 명칭의 규격 파일은 제거하고 DOT 규격 경로로 교체했다.

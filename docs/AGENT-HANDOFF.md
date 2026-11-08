@@ -6,7 +6,7 @@
 
 ## 먼저 확인
 
-README.md, AGENTS.md, reports/AUDIT.md, reports/VALIDATION.md와 docs/IMPLEMENTATION-PLAN.md를 읽는다. rules/rules.json이 규칙 정본이며 표는 scripts/render_rules.py로 생성한다. 입력 ZIP은 원본으로 유지했다. 제공 폴더가 ZIP 35개 파일과 일치함을 확인한 뒤 기존 해제본을 수정했다. Git 저장소는 생성하지 않았다.
+README.md, AGENTS.md, reports/AUDIT.md, reports/VALIDATION.md와 docs/IMPLEMENTATION-PLAN.md를 읽는다. rules/rules.json이 규칙 정본이며 표는 scripts/render_rules.py로 생성한다. 입력 ZIP은 원본으로 유지했다. 제공 폴더가 ZIP 35개 파일과 일치함을 확인한 뒤 기존 해제본을 수정했다. 로컬 검토 폴더는 git init 하지 않았다. 원격 dotoridot/DOT-STK100은 생성해 공개 초안을 반영했다.
 
 ## 이번 로컬 구현
 
