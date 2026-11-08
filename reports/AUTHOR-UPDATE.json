@@ -1,7 +1,7 @@
 {
   "author": "dotoridot",
-  "project": "YUPK-STK100",
-  "skill_slug": "yupk-stk100",
+  "project": "DOT-STK100",
+  "skill_slug": "dot-stk100",
   "changed_files": [
     "AUTHORS.md",
     "CITATION.cff",
@@ -15,7 +15,7 @@
     "docs/DESIGN-DECISIONS.md",
     "docs/IMPLEMENTATION-PLAN.md",
     "docs/RELEASE-CHECKLIST.md",
-    "references/YUPK-STK100-SPEC.md",
+    "references/DOT-STK100-SPEC.md",
     "scripts/validate_package.py"
   ],
   "tests_passed": 49,

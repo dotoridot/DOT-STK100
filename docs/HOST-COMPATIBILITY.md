@@ -4,8 +4,8 @@
 
 | 호스트 | 프로젝트 범위 | 사용자 범위 | 명시적 호출 |
 |---|---|---|---|
-| Codex | `.agents/skills/yupk-stk100/SKILL.md` | `~/.agents/skills/yupk-stk100/SKILL.md` | `$yupk-stk100` |
-| Claude Code | `.claude/skills/yupk-stk100/SKILL.md` | `~/.claude/skills/yupk-stk100/SKILL.md` | `/yupk-stk100` |
+| Codex | `.agents/skills/dot-stk100/SKILL.md` | `~/.agents/skills/dot-stk100/SKILL.md` | `$dot-stk100` |
+| Claude Code | `.claude/skills/dot-stk100/SKILL.md` | `~/.claude/skills/dot-stk100/SKILL.md` | `/dot-stk100` |
 
 배포 승인 전에는 이 로컬 패키지를 직접 복사해 사용할 수 있다. SKILL.md만 복사하지 않는다. 전체 패키지 복사 시 .git, __pycache__, .venv, .env, private, local-runs와 기존 설치 폴더를 제외한다. 이미 동명 스킬이 있으면 덮어쓰지 말고 비교한 뒤 교체한다. 이 작업에서 실제 사용자 설치 폴더를 변경하지 않았다.
 

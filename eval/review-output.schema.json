@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Proposed YUPK-STK100 review result; no engine provided",
+  "title": "Proposed DOT-STK100 review result; no engine provided",
   "type": "object",
   "additionalProperties": false,
   "required": [

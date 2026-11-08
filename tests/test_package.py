@@ -144,7 +144,7 @@ class PackageTests(unittest.TestCase):
         self.assertTrue(any("CITATION.cff" in x and "mismatch" in x for x in errors))
 
     def test_metadata_requires_description(self) -> None:
-        skill = '---\nname: yupk-stk100\nmetadata:\n  version: "0.2"\n---\n'
+        skill = '---\nname: dot-stk100\nmetadata:\n  version: "0.2"\n---\n'
         errors = selected_metadata_errors(skill, 'version: "0.2"\n', "0.2")
         self.assertTrue(any("description" in x for x in errors))
 

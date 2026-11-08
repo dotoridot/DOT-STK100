@@ -4,7 +4,7 @@
 
 ## 우선 읽기
 
-`README.md`, `docs/AGENT-HANDOFF.md`, `docs/IMPLEMENTATION-PLAN.md`, `references/YUPK-STK100-SPEC.md`를 읽는다. 기존 작업 지시·권한 정책을 덮어쓰지 않는다.
+`README.md`, `docs/AGENT-HANDOFF.md`, `docs/IMPLEMENTATION-PLAN.md`, `references/DOT-STK100-SPEC.md`를 읽는다. 기존 작업 지시·권한 정책을 덮어쓰지 않는다.
 
 ## 반드시 지킬 경계
 

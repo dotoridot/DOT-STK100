@@ -49,7 +49,7 @@ def main(argv: list[str] | None = None) -> int:
         rules = data["rules"]
         if not isinstance(rules, list) or not rules:
             raise ValueError("rules must be a nonempty list")
-        path = root / "references/YUPK-STK100-SPEC.md"
+        path = root / "references/DOT-STK100-SPEC.md"
         original = path.read_text(encoding="utf-8")
         rendered = render_document(original, rules)
         if args.check:

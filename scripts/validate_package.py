@@ -23,7 +23,7 @@ LABELS = {"compatible", "meaning_changed", "needs_context"}
 REQUIRED = (
     "README.md", "SKILL.md", "AGENTS.md", "AUTHORS.md", "CITATION.cff", "LICENSE.md",
     "NOTICE.md", "CONTRIBUTING.md", "CHANGELOG.md", "LICENSES/MIT.txt",
-    "rules/rules.json", "references/YUPK-STK100-SPEC.md", "references/RESEARCH.md",
+    "rules/rules.json", "references/DOT-STK100-SPEC.md", "references/RESEARCH.md",
     "references/sources.json", "references/terminology.json", "docs/AGENT-HANDOFF.md",
     "docs/DESIGN-DECISIONS.md", "docs/IMPLEMENTATION-PLAN.md", "docs/EVALUATION.md",
     "docs/INTEGRATION.md", "docs/MIGRATION.md", "docs/RELEASE-CHECKLIST.md",
@@ -190,8 +190,8 @@ def selected_metadata_errors(skill: str, cff: str, version: str) -> list[str]:
         return ["SKILL.md: missing front matter"]
     front = match.group(1)
     fields = dict(re.findall(r"^([a-z][a-z-]*):\s*(.*)$", front, re.M))
-    if fields.get("name") != "yupk-stk100":
-        errors.append("SKILL.md: name must be yupk-stk100")
+    if fields.get("name") != "dot-stk100":
+        errors.append("SKILL.md: name must be dot-stk100")
     if not re.search(r'^  author:\s*dotoridot\s*$', front, re.M):
         errors.append("SKILL.md: author must be dotoridot")
     if not re.search(r'^  - name:\s*"dotoridot"\s*$', cff, re.M):
@@ -235,7 +235,7 @@ def validate(root: Path) -> tuple[list[str], dict[str, int]]:
                 continue
             errors.extend(local_link_errors(root, path, path.read_text(encoding="utf-8")))
         if isinstance(rules, dict) and isinstance(rules.get("rules"), list):
-            path = root / "references/YUPK-STK100-SPEC.md"
+            path = root / "references/DOT-STK100-SPEC.md"
             text = path.read_text(encoding="utf-8")
             if render_document(text, rules["rules"]) != text:
                 errors.append("generated rule table is stale")

@@ -1,6 +1,6 @@
 ---
-name: yupk-stk100
-description: 한국어 기술 설명, SDK/API 문서, 코드 리뷰, 장애 보고서와 운영 절차를 YUPK-STK100으로 작성·교정·검토할 때 사용한다. 조건·주체·부정·수치·식별자·예외·근거 수준을 보존한다. 표현 편집과 사실 검증을 분리하며, 창작·광고의 자연스러운 말투 교정이나 코드 변경에는 자동 적용하지 않는다.
+name: dot-stk100
+description: 한국어 기술 설명, SDK/API 문서, 코드 리뷰, 장애 보고서와 운영 절차를 DOT-STK100으로 작성·교정·검토할 때 사용한다. 조건·주체·부정·수치·식별자·예외·근거 수준을 보존한다. 표현 편집과 사실 검증을 분리하며, 창작·광고의 자연스러운 말투 교정이나 코드 변경에는 자동 적용하지 않는다.
 license: MIT
 metadata:
   author: dotoridot
@@ -9,7 +9,7 @@ metadata:
   license-status: "MIT"
 ---
 
-# YUPK-STK100
+# DOT-STK100
 
 ## 필요한 파일만 읽기
 
@@ -18,7 +18,7 @@ metadata:
 | 프로필 | 먼저 읽기 | 조건부 추가 읽기 |
 |---|---|---|
 | Lite | [빠른 설명](references/profiles/lite.md) | 용어 역할이 혼동될 때만 [용어집](references/terminology.json) |
-| Core | [문서 작성과 교정](references/profiles/core.md) | 필요한 규칙의 예외는 [정본](rules/rules.json), 판정 기준은 [규격](references/YUPK-STK100-SPEC.md) 해당 절 |
+| Core | [문서 작성과 교정](references/profiles/core.md) | 필요한 규칙의 예외는 [정본](rules/rules.json), 판정 기준은 [규격](references/DOT-STK100-SPEC.md) 해당 절 |
 | Audit | [의미 변경 위험 검토](references/profiles/audit.md), [정본](rules/rules.json) | 근거 확인 시 [연구](references/RESEARCH.md), 관련 용어만 [용어집](references/terminology.json) |
 
 전체 규격 해설·완전한 규칙 검토를 요청받았을 때만 규격 전체를 읽는다. README, 개발 AGENTS, 구현 계획, 연구 목록을 매번 전부 읽지 않는다. 필요한 파일을 읽지 못했으면 적용 범위를 알리고 전체 규격을 적용했다고 주장하지 않는다.

@@ -1,6 +1,6 @@
 cff-version: 1.2.0
-message: "YUPK-STK100의 규격·스킬을 인용할 때 dotoridot과 사용한 버전을 표시해 주세요. 연구 효과 검증 전의 설계 초안입니다."
-title: "YUPK-STK100: YUPK Simplified Technical Korean"
+message: "DOT-STK100의 규격·스킬을 인용할 때 dotoridot과 사용한 버전을 표시해 주세요. 연구 효과 검증 전의 설계 초안입니다."
+title: "DOT-STK100: DOT Simplified Technical Korean"
 authors:
   - name: "dotoridot"
 version: "0.2.0-draft.3"
@@ -11,4 +11,4 @@ keywords:
   - semantic-preservation
   - agent-skills
 license: MIT
-repository-code: "https://github.com/dotoridot/YUPK-STK100"
+repository-code: "https://github.com/dotoridot/DOT-STK100"

@@ -1,6 +1,6 @@
-# YUPK-STK100 이름 변경 검토
+# DOT-STK100 이름 변경 검토
 
-사용자 요청에 따라 표시명과 저장소 이름을 YUPK-STK100, 정식 명칭을 YUPK Simplified Technical Korean, 저작자를 yupk로 준비했다. 스킬 name과 설치 폴더는 yupk-stk100이다. GitHub 계정 yupk는 다른 사람 소유이므로 그 주소를 프로젝트 URL로 사용하지 않았다. 새 계정 ID와 라이선스 선택은 대기 중이다.
+사용자 요청에 따라 표시명과 저장소 이름을 DOT-STK100, 정식 명칭을 DOT Simplified Technical Korean, 저작자를 yupk로 준비했다. 스킬 name과 설치 폴더는 dot-stk100이다. GitHub 계정 yupk는 다른 사람 소유이므로 그 주소를 프로젝트 URL로 사용하지 않았다. 새 계정 ID와 라이선스 선택은 대기 중이다.
 
 기존 규칙 ID YSK-M01 등은 의미와 ID 호환성을 위해 유지했다. 이 접두사는 기존 규칙 식별자이며 현재 저작자 표시가 아니다. 규칙 ID를 재사용하거나 새 규칙처럼 재번호를 붙이지 않는다.
 
@@ -8,12 +8,12 @@
 
 ## 저작자 선택 갱신
 
-최신 사용자 지정은 commeng이다. README, AUTHORS, CITATION, SKILL 메타데이터, 라이선스 초안과 구조 검사기의 저작자 기준을 commeng으로 갱신했다. 저장소/프로젝트 이름 YUPK-STK100과 설치 slug yupk-stk100은 유지한다. github.com/commeng 계정이 존재하므로 소유 여부와 실제 계정명 변경 전에는 기존 원격 링크를 그 계정으로 돌리지 않는다. 기존 저작자 yupk 기록은 이전 선택의 이력이다.
+최신 사용자 지정은 commeng이다. README, AUTHORS, CITATION, SKILL 메타데이터, 라이선스 초안과 구조 검사기의 저작자 기준을 commeng으로 갱신했다. 저장소/프로젝트 이름 DOT-STK100과 설치 slug dot-stk100은 유지한다. github.com/commeng 계정이 존재하므로 소유 여부와 실제 계정명 변경 전에는 기존 원격 링크를 그 계정으로 돌리지 않는다. 기존 저작자 yupk 기록은 이전 선택의 이력이다.
 
 ## 최신 ID 선택
 
-사용자의 최신 선택은 dotoridot이다. 현재 저작자 표기와 검증 기준을 dotoridot으로 갱신했다. 프로젝트 이름 YUPK-STK100과 스킬 slug yupk-stk100은 유지한다. 공개 프로필의 404 응답만으로 ID 사용 가능을 확정하지 않는다. GitHub 계정 변경이 실제 완료된 뒤 기존 저장소 링크를 변경한다. commeng은 이전 선택의 이력이다.
+사용자의 최신 선택은 dotoridot이다. 현재 저작자 표기와 검증 기준을 dotoridot으로 갱신했다. 프로젝트 이름 DOT-STK100과 스킬 slug dot-stk100은 유지한다. 공개 프로필의 404 응답만으로 ID 사용 가능을 확정하지 않는다. GitHub 계정 변경이 실제 완료된 뒤 기존 저장소 링크를 변경한다. commeng은 이전 선택의 이력이다.
 
 ## 공개 준비 승인과 확인
 
-사용자가 dotoridot 계정명 변경을 완료했고 GitHub 연결의 사용자 ID 50072371이 유지됨을 확인했다. 프로젝트 전체 MIT와 새 공개 저장소 생성/업로드를 승인받았다. 저장소 dotoridot/YUPK-STK100의 public 상태를 확인했다. 아래 이전 선택/승인 대기 문장은 당시 단계의 이력이다.
+사용자가 dotoridot 계정명 변경을 완료했고 GitHub 연결의 사용자 ID 50072371이 유지됨을 확인했다. 프로젝트 전체 MIT와 새 공개 저장소 생성/업로드를 승인받았다. 저장소 dotoridot/DOT-STK100의 public 상태를 확인했다. 아래 이전 선택/승인 대기 문장은 당시 단계의 이력이다.
