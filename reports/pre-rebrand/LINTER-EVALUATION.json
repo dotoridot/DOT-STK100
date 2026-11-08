@@ -1,0 +1,553 @@
+{
+  "evaluation_kind": "development_warning_triage_against_ai_draft_labels",
+  "human_validated": false,
+  "unit": "one_candidate_document_any_warning",
+  "case_count": 56,
+  "source_family_count": 28,
+  "confusion_matrix_provisional": {
+    "tp": 20,
+    "fp": 11,
+    "tn": 15,
+    "fn": 6
+  },
+  "excluded_needs_context": 4,
+  "provisional_precision": 0.6451612903225806,
+  "provisional_recall": 0.7692307692307693,
+  "provisional_false_positive_rate": 0.4230769230769231,
+  "provisional_false_negative_rate": 0.23076923076923078,
+  "human_precision": null,
+  "human_recall": null,
+  "notice": "AI 초안 라벨 기준의 경고 발생 집계다. 경고의 타당성, 의미 판정 성능, 일반 정확도와 사람 평가가 아니다. 관련 없는 경고도 any-warning으로 센다. 같은 pair_id는 독립 표본이 아니다.",
+  "cases": [
+    {
+      "case_id": "CASE-01-A",
+      "pair_id": "PAIR-01",
+      "provisional_label": "compatible",
+      "warning_count": 2,
+      "checks": [
+        "conditions",
+        "negation"
+      ],
+      "triage_outcome": "fp"
+    },
+    {
+      "case_id": "CASE-01-B",
+      "pair_id": "PAIR-01",
+      "provisional_label": "needs_context",
+      "warning_count": 3,
+      "checks": [
+        "conditions",
+        "identifiers",
+        "negation"
+      ],
+      "triage_outcome": "excluded_needs_context"
+    },
+    {
+      "case_id": "CASE-02-A",
+      "pair_id": "PAIR-02",
+      "provisional_label": "compatible",
+      "warning_count": 2,
+      "checks": [
+        "conditions",
+        "subject"
+      ],
+      "triage_outcome": "fp"
+    },
+    {
+      "case_id": "CASE-02-B",
+      "pair_id": "PAIR-02",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "identifiers"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-03-A",
+      "pair_id": "PAIR-03",
+      "provisional_label": "compatible",
+      "warning_count": 1,
+      "checks": [
+        "negation"
+      ],
+      "triage_outcome": "fp"
+    },
+    {
+      "case_id": "CASE-03-B",
+      "pair_id": "PAIR-03",
+      "provisional_label": "meaning_changed",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "fn"
+    },
+    {
+      "case_id": "CASE-04-A",
+      "pair_id": "PAIR-04",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-04-B",
+      "pair_id": "PAIR-04",
+      "provisional_label": "meaning_changed",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "fn"
+    },
+    {
+      "case_id": "CASE-05-A",
+      "pair_id": "PAIR-05",
+      "provisional_label": "compatible",
+      "warning_count": 2,
+      "checks": [
+        "conditions",
+        "values"
+      ],
+      "triage_outcome": "fp"
+    },
+    {
+      "case_id": "CASE-05-B",
+      "pair_id": "PAIR-05",
+      "provisional_label": "meaning_changed",
+      "warning_count": 2,
+      "checks": [
+        "conditions",
+        "values"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-06-A",
+      "pair_id": "PAIR-06",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-06-B",
+      "pair_id": "PAIR-06",
+      "provisional_label": "meaning_changed",
+      "warning_count": 2,
+      "checks": [
+        "values"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-07-A",
+      "pair_id": "PAIR-07",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-07-B",
+      "pair_id": "PAIR-07",
+      "provisional_label": "meaning_changed",
+      "warning_count": 2,
+      "checks": [
+        "terminology",
+        "values"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-08-A",
+      "pair_id": "PAIR-08",
+      "provisional_label": "compatible",
+      "warning_count": 1,
+      "checks": [
+        "uncertainty"
+      ],
+      "triage_outcome": "fp"
+    },
+    {
+      "case_id": "CASE-08-B",
+      "pair_id": "PAIR-08",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "uncertainty"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-09-A",
+      "pair_id": "PAIR-09",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-09-B",
+      "pair_id": "PAIR-09",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "negation"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-10-A",
+      "pair_id": "PAIR-10",
+      "provisional_label": "needs_context",
+      "warning_count": 1,
+      "checks": [
+        "uncertainty"
+      ],
+      "triage_outcome": "excluded_needs_context"
+    },
+    {
+      "case_id": "CASE-10-B",
+      "pair_id": "PAIR-10",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "uncertainty"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-11-A",
+      "pair_id": "PAIR-11",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-11-B",
+      "pair_id": "PAIR-11",
+      "provisional_label": "meaning_changed",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "fn"
+    },
+    {
+      "case_id": "CASE-12-A",
+      "pair_id": "PAIR-12",
+      "provisional_label": "compatible",
+      "warning_count": 1,
+      "checks": [
+        "negation"
+      ],
+      "triage_outcome": "fp"
+    },
+    {
+      "case_id": "CASE-12-B",
+      "pair_id": "PAIR-12",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "negation"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-13-A",
+      "pair_id": "PAIR-13",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-13-B",
+      "pair_id": "PAIR-13",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "negation"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-14-A",
+      "pair_id": "PAIR-14",
+      "provisional_label": "compatible",
+      "warning_count": 1,
+      "checks": [
+        "conditions"
+      ],
+      "triage_outcome": "fp"
+    },
+    {
+      "case_id": "CASE-14-B",
+      "pair_id": "PAIR-14",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "conditions"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-15-A",
+      "pair_id": "PAIR-15",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-15-B",
+      "pair_id": "PAIR-15",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "negation"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-16-A",
+      "pair_id": "PAIR-16",
+      "provisional_label": "compatible",
+      "warning_count": 1,
+      "checks": [
+        "conditions"
+      ],
+      "triage_outcome": "fp"
+    },
+    {
+      "case_id": "CASE-16-B",
+      "pair_id": "PAIR-16",
+      "provisional_label": "meaning_changed",
+      "warning_count": 2,
+      "checks": [
+        "conditions",
+        "protected"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-17-A",
+      "pair_id": "PAIR-17",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-17-B",
+      "pair_id": "PAIR-17",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "protected"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-18-A",
+      "pair_id": "PAIR-18",
+      "provisional_label": "compatible",
+      "warning_count": 1,
+      "checks": [
+        "uncertainty"
+      ],
+      "triage_outcome": "fp"
+    },
+    {
+      "case_id": "CASE-18-B",
+      "pair_id": "PAIR-18",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "uncertainty"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-19-A",
+      "pair_id": "PAIR-19",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-19-B",
+      "pair_id": "PAIR-19",
+      "provisional_label": "meaning_changed",
+      "warning_count": 2,
+      "checks": [
+        "values"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-20-A",
+      "pair_id": "PAIR-20",
+      "provisional_label": "compatible",
+      "warning_count": 1,
+      "checks": [
+        "values"
+      ],
+      "triage_outcome": "fp"
+    },
+    {
+      "case_id": "CASE-20-B",
+      "pair_id": "PAIR-20",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "values"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-21-A",
+      "pair_id": "PAIR-21",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-21-B",
+      "pair_id": "PAIR-21",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "negation"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-22-A",
+      "pair_id": "PAIR-22",
+      "provisional_label": "needs_context",
+      "warning_count": 1,
+      "checks": [
+        "subject"
+      ],
+      "triage_outcome": "excluded_needs_context"
+    },
+    {
+      "case_id": "CASE-22-B",
+      "pair_id": "PAIR-22",
+      "provisional_label": "meaning_changed",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "fn"
+    },
+    {
+      "case_id": "CASE-23-A",
+      "pair_id": "PAIR-23",
+      "provisional_label": "compatible",
+      "warning_count": 1,
+      "checks": [
+        "conditions"
+      ],
+      "triage_outcome": "fp"
+    },
+    {
+      "case_id": "CASE-23-B",
+      "pair_id": "PAIR-23",
+      "provisional_label": "meaning_changed",
+      "warning_count": 2,
+      "checks": [
+        "conditions",
+        "protected"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-24-A",
+      "pair_id": "PAIR-24",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-24-B",
+      "pair_id": "PAIR-24",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "protected"
+      ],
+      "triage_outcome": "tp"
+    },
+    {
+      "case_id": "CASE-25-A",
+      "pair_id": "PAIR-25",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-25-B",
+      "pair_id": "PAIR-25",
+      "provisional_label": "meaning_changed",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "fn"
+    },
+    {
+      "case_id": "CASE-26-A",
+      "pair_id": "PAIR-26",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-26-B",
+      "pair_id": "PAIR-26",
+      "provisional_label": "meaning_changed",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "fn"
+    },
+    {
+      "case_id": "CASE-27-A",
+      "pair_id": "PAIR-27",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-27-B",
+      "pair_id": "PAIR-27",
+      "provisional_label": "needs_context",
+      "warning_count": 1,
+      "checks": [
+        "subject"
+      ],
+      "triage_outcome": "excluded_needs_context"
+    },
+    {
+      "case_id": "CASE-28-A",
+      "pair_id": "PAIR-28",
+      "provisional_label": "compatible",
+      "warning_count": 0,
+      "checks": [],
+      "triage_outcome": "tn"
+    },
+    {
+      "case_id": "CASE-28-B",
+      "pair_id": "PAIR-28",
+      "provisional_label": "meaning_changed",
+      "warning_count": 1,
+      "checks": [
+        "terminology"
+      ],
+      "triage_outcome": "tp"
+    }
+  ],
+  "dataset_sha256": "cd372b157d40d4ac11ce4a9f9fcb4fd91312a501258af772c79a227106ad1373",
+  "implementation_sha256": "aa3bdbe6b5f6c28e80c5a76b1161431f4a59bc5ef44305200e660ed81e8bff1e",
+  "spec_version": "0.2.0-draft.2"
+}

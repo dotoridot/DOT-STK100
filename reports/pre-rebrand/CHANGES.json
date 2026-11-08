@@ -1,0 +1,254 @@
+{
+  "baseline": "ysk-stk100-package.zip",
+  "baseline_sha256": "44280ce950b2fc7c8c8b248755a4db71f9964d22dc977b2823577f2c4dd8f0de",
+  "version": "0.2.0-draft.2",
+  "author": "youngssangkwon",
+  "note": "File-level diff; this manifest excludes its own digest. Archive test report may be regenerated after initial capture. No Git repository or remote mutation.",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "change": "modified",
+      "sha256": "810c53f4da70a0bf1b3bada0a33373678dfe55cea3bb6673c70c1f637dee4c0d"
+    },
+    {
+      "path": "AUTHORS.md",
+      "change": "modified",
+      "sha256": "e4217d420866cf96da1d73c20d8666dbda5140fb1529d4aa00ab14539b198ab6"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "change": "modified",
+      "sha256": "5af2a5d3a4bdca3e87767e56ce7388598268e337f054801bab660a70f0d97450"
+    },
+    {
+      "path": "CITATION.cff",
+      "change": "modified",
+      "sha256": "2691a129625adea8585ded31d6a92c96df4fbaeb85aa58e0f3b48b6e5dc58dc8"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "change": "modified",
+      "sha256": "ac20cb8cc802f79426ae4c07362c116c3db72ab478c02e335b421159c18c3809"
+    },
+    {
+      "path": "LICENSE.md",
+      "change": "modified",
+      "sha256": "181c49513b31c4ade1ac93f0dde7787022a09f1e26087327e15756a4cae50779"
+    },
+    {
+      "path": "LICENSES/MIT.txt",
+      "change": "modified",
+      "sha256": "23bb53a93baa6259a98d0499dba053a3cfba8a37c8e1c0e2edb70b59e3d12844"
+    },
+    {
+      "path": "NOTICE.md",
+      "change": "modified",
+      "sha256": "dace62dd2815987b73fe7fb39871526e691c088a106a48feaffca9d23343546b"
+    },
+    {
+      "path": "README.md",
+      "change": "modified",
+      "sha256": "7b0f9146e3a0916f071db094bf405441c7ee5efc7417f106dfc0928cbe3c4de7"
+    },
+    {
+      "path": "SKILL.md",
+      "change": "modified",
+      "sha256": "cc83809a986dbe8c1b6f2a5767187527ee6ef0df0c0f372ee123543d164e65db"
+    },
+    {
+      "path": "docs/AGENT-HANDOFF.md",
+      "change": "modified",
+      "sha256": "ef66329605d779e75a1ea9842a2914a4445c9332abbeaea8ea8138ba0d81dd27"
+    },
+    {
+      "path": "docs/DESIGN-DECISIONS.md",
+      "change": "modified",
+      "sha256": "2424cdfe79297100b669ca502bb7b625c8f0f5dc7c6f966da36b0209f570a565"
+    },
+    {
+      "path": "docs/EVALUATION.md",
+      "change": "modified",
+      "sha256": "bd1e84169a9dec0838bdb729cd2f9af00ebc98a1e6620e071d54102a51827986"
+    },
+    {
+      "path": "docs/HOST-COMPATIBILITY.md",
+      "change": "added",
+      "sha256": "ba9d14d24a4c37e092908463792023c8543bf91e7a89ce7257103d717f0c8505"
+    },
+    {
+      "path": "docs/IMPLEMENTATION-PLAN.md",
+      "change": "modified",
+      "sha256": "1c2d8934a729e17ab778c71eec4dbe41944ed394155ed12a2810655e0d124eb0"
+    },
+    {
+      "path": "docs/INTEGRATION.md",
+      "change": "modified",
+      "sha256": "3652aadba8d35af8433221daec20a01ad856e99e8b8848d216a84cd000090a5a"
+    },
+    {
+      "path": "docs/LINTER.md",
+      "change": "added",
+      "sha256": "6b666fb30468a3a51b27ac9a819a0e3873738b69bd8b5e69e21c8b3adf46c7eb"
+    },
+    {
+      "path": "docs/RELEASE-CHECKLIST.md",
+      "change": "modified",
+      "sha256": "f18f80bd91d4c55a7d736f12150c03ddf8181b55d576cc7bc86db29d0a396be5"
+    },
+    {
+      "path": "eval/DATA-CARD.md",
+      "change": "modified",
+      "sha256": "71cceed44e889617f249ec6f1a754b0e601b1ebedcd2dc0702f3bc1b2c5ec30f"
+    },
+    {
+      "path": "eval/annotation-template.json",
+      "change": "modified",
+      "sha256": "b77da34650a172097df7c978cb6785ce0c312bc99d1757a9eb4b6ff919d277ac"
+    },
+    {
+      "path": "eval/human-review-queue.jsonl",
+      "change": "added",
+      "sha256": "5b448ba1ed9ecb1f2ca0755750817063124c7f51635667818a58f5e5ebda28e4"
+    },
+    {
+      "path": "eval/lint-output.schema.json",
+      "change": "added",
+      "sha256": "3a9d2d8fc889b1c3be75d0d68093bb57608f4e00dcc4ee886c3af0b567e939f8"
+    },
+    {
+      "path": "eval/seed-cases.jsonl",
+      "change": "modified",
+      "sha256": "cd372b157d40d4ac11ce4a9f9fcb4fd91312a501258af772c79a227106ad1373"
+    },
+    {
+      "path": "examples/BEFORE-AFTER.md",
+      "change": "modified",
+      "sha256": "f3ddb175b02c07a13f8976b5b00c5cdc9eed068459f612f0933ada72edddbf02"
+    },
+    {
+      "path": "examples/candidate.md",
+      "change": "added",
+      "sha256": "7f9c4abb1745870c1fbd0130958d625bf5a222980aac8796548225c3b0d3c753"
+    },
+    {
+      "path": "examples/source.md",
+      "change": "added",
+      "sha256": "103bc3faa230069ffb0d1dbc203e6ce15e3b7c884f9b7245e9090e6eaffd885e"
+    },
+    {
+      "path": "references/RESEARCH.md",
+      "change": "modified",
+      "sha256": "95fc0d889748991b6e24a59cf9fda858cd2b3e03a4f1605a001e15136ad4da26"
+    },
+    {
+      "path": "references/YSK-STK100-SPEC.md",
+      "change": "modified",
+      "sha256": "fc2925aa9539185227ff4bdc423f4bcb2effc38863d1329948701b0a81d62618"
+    },
+    {
+      "path": "references/lint-terms.json",
+      "change": "added",
+      "sha256": "2ba9be107cf6789bfa9e9f71193b76b07473549c62334341f124853dd1ff9881"
+    },
+    {
+      "path": "references/profiles/audit.md",
+      "change": "added",
+      "sha256": "6d891c566764f0be253547e1aff8b43065545ce4ef34b64825266c586ac418bf"
+    },
+    {
+      "path": "references/profiles/core.md",
+      "change": "added",
+      "sha256": "639450da3a6f8f4100e1bc12f91bd36bd85af8d4defd9d552d6560f853d81fe0"
+    },
+    {
+      "path": "references/profiles/lite.md",
+      "change": "added",
+      "sha256": "dc5688538693af20284fd32725ffa6b281928620b7dd7b4f4645fb48c3dafc91"
+    },
+    {
+      "path": "references/sources.json",
+      "change": "modified",
+      "sha256": "7765b25548cf4d59234e01d24361c9591b04fcd8601e9be41f9f1cdb7b5a410d"
+    },
+    {
+      "path": "references/terminology.json",
+      "change": "modified",
+      "sha256": "25a65650580529583edbf080d225c93b17a99375606a0335193342ebdf1cddd7"
+    },
+    {
+      "path": "reports/AUDIT.md",
+      "change": "added",
+      "sha256": "e41b587c2353e7676646ad202645437124746170be511dbbd8e7f977a1d370ca"
+    },
+    {
+      "path": "reports/LINTER-EVALUATION.json",
+      "change": "added",
+      "sha256": "711aa9f3910a97b4ee7650c3fa45669fa846265b1123a4a6bebf0dfbc8361930"
+    },
+    {
+      "path": "reports/VALIDATION.md",
+      "change": "modified",
+      "sha256": "3c6ea7b8b5ae1748540d533b685f8f6d1db32fd0aaa27363472e7c5443e8e2ee"
+    },
+    {
+      "path": "reports/example-lint-output.json",
+      "change": "added",
+      "sha256": "22059e76b7f83680f8548d2dc375f113148ba9b6f9106d0fbbea77f07a92846d"
+    },
+    {
+      "path": "reports/host-layout-output.txt",
+      "change": "added",
+      "sha256": "68f2358399c25117fc4b5c3d2f8e45b3826ba411a749bb179c8c3e035690a111"
+    },
+    {
+      "path": "reports/input-draft1/VALIDATION.md",
+      "change": "added",
+      "sha256": "f300b8d1b495f3f031790dae0a39164fe367845e190bbea43e65acc80bfdb104"
+    },
+    {
+      "path": "reports/input-draft1/archive-check.txt",
+      "change": "added",
+      "sha256": "69d8a4072ca652c61a98a11ccfb0e1c16283af77e4eb148edee4391c751b769f"
+    },
+    {
+      "path": "reports/input-draft1/validation-output.txt",
+      "change": "added",
+      "sha256": "239e85b953b800939ce44179bb3fdc33b2f72d0ce6fa5cb45a65a2ae20f91921"
+    },
+    {
+      "path": "reports/validation-output.txt",
+      "change": "modified",
+      "sha256": "2e54090a0eab487dd1cb34902aa86da91805fe0a897678f420ef75f009728303"
+    },
+    {
+      "path": "rules/rules.json",
+      "change": "modified",
+      "sha256": "454a72d398880c515d7b1aedaa029ac417d911ec7275bfb99d65b1b5c8730456"
+    },
+    {
+      "path": "scripts/evaluate_linter.py",
+      "change": "added",
+      "sha256": "198553d0b97ee5326c04f7ba02a8b45314d214c453c000ccccf4b7fcbe317265"
+    },
+    {
+      "path": "scripts/lint_text.py",
+      "change": "added",
+      "sha256": "aa3bdbe6b5f6c28e80c5a76b1161431f4a59bc5ef44305200e660ed81e8bff1e"
+    },
+    {
+      "path": "scripts/validate_package.py",
+      "change": "modified",
+      "sha256": "e562f1b07bb994d6f53f9bd83efc2a5d1904ac53d38c7614c12c3383545f41a9"
+    },
+    {
+      "path": "tests/test_evaluation.py",
+      "change": "added",
+      "sha256": "bf4f050ba85df2f49a57d9a89c4d6ab0d297c67c3ad08b834453a079facfbb76"
+    },
+    {
+      "path": "tests/test_linter.py",
+      "change": "added",
+      "sha256": "1a90ed2689923778cce9ca20d5b6fac4a5a5cc339b3f2290fcc61ff8560a3fea"
+    }
+  ]
+}

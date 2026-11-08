@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Proposed YUPK-STK100 review result; no engine provided",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "spec_version",
+    "verdict",
+    "review_scope",
+    "findings"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1"
+    },
+    "spec_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verdict": {
+      "enum": [
+        "compatible",
+        "meaning_changed",
+        "needs_context"
+      ]
+    },
+    "review_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rule_id",
+          "severity",
+          "certainty",
+          "source_quote",
+          "candidate_quote",
+          "reason"
+        ],
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "pattern": "^YSK-[MKEPQ][0-9]{2}$"
+          },
+          "severity": {
+            "enum": [
+              "BLOCKER",
+              "ERROR",
+              "WARN"
+            ]
+          },
+          "certainty": {
+            "enum": [
+              "candidate",
+              "confirmed"
+            ]
+          },
+          "source_quote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "candidate_quote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

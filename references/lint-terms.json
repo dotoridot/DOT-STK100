@@ -1,0 +1,8 @@
+{
+  "version": "0.2.0-draft.3",
+  "policy": "동일 개념으로 정의한 경우에만 표기 통일을 검토한다. 자동 치환하지 않는다. 탐지/차단 같은 의미 구분은 terminology.json에서 관리한다.",
+  "groups": [
+    {"id": "SPELL-01", "canonical": "타임아웃", "variants": ["타임 아웃", "timeout"]},
+    {"id": "SPELL-02", "canonical": "콜백", "variants": ["콜 백", "callback"]}
+  ]
+}

@@ -1,0 +1,12 @@
+host-layout=codex, command=python3 scripts/validate_package.py, exit=0
+PASS: package structure and references
+{"rules": 32, "seed_cases": 56, "source_families": 28, "sources": 17, "term_pairs": 12}
+NOT CHECKED: semantic labels, facts, readability, host compatibility or real-world effectiveness
+
+host-layout=claude, command=python3 scripts/validate_package.py, exit=0
+PASS: package structure and references
+{"rules": 32, "seed_cases": 56, "source_families": 28, "sources": 17, "term_pairs": 12}
+NOT CHECKED: semantic labels, facts, readability, host compatibility or real-world effectiveness
+
+NOT RUN: host discovery, skill invocation, model output, prompt-injection or host network enforcement.
+Temporary copies were removed; no user installation modified.

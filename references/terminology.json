@@ -1,0 +1,126 @@
+{
+  "version": "0.2.0-draft.3",
+  "policy": "검토용 의미 구분. 자동 치환 사전이 아님. 프로젝트 정의·UI 원문·인용을 우선하며 의미 충돌을 보고한다.",
+  "entries": [
+    {
+      "id": "TERM-01",
+      "term_a": "탐지",
+      "meaning_a": "신호나 조건을 발견하여 판정하는 것",
+      "term_b": "차단",
+      "meaning_b": "동작이나 접근을 막는 것",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft"
+    },
+    {
+      "id": "TERM-02",
+      "term_a": "미수행",
+      "meaning_a": "작업을 실행하지 않은 상태",
+      "term_b": "실패",
+      "meaning_b": "실행한 작업이 성공 조건을 충족하지 못한 상태",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft"
+    },
+    {
+      "id": "TERM-03",
+      "term_a": "오탐",
+      "meaning_a": "이 프로젝트 평가에서 양성 조건을 충족하지 않는 대상을 양성으로 판정함",
+      "term_b": "미탐",
+      "meaning_b": "이 프로젝트 평가에서 양성 조건을 충족하는 대상을 양성으로 판정하지 못함",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft"
+    },
+    {
+      "id": "TERM-04",
+      "term_a": "인증",
+      "meaning_a": "주체의 신원을 확인",
+      "term_b": "인가",
+      "meaning_b": "특정 작업의 권한을 판단",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft"
+    },
+    {
+      "id": "TERM-05",
+      "term_a": "미지원",
+      "meaning_a": "기능을 제공하지 않음",
+      "term_b": "비활성화",
+      "meaning_b": "기능이 있으나 꺼져 있음",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft"
+    },
+    {
+      "id": "TERM-06",
+      "term_a": "기록",
+      "meaning_a": "로그나 저장소에 남김",
+      "term_b": "보고",
+      "meaning_b": "정의된 수신자에게 결과 전달",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft"
+    },
+    {
+      "id": "TERM-07",
+      "term_a": "검사",
+      "meaning_a": "정해진 절차로 상태를 조사",
+      "term_b": "검증",
+      "meaning_b": "기준과 근거로 주장을 확인",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft"
+    },
+    {
+      "id": "TERM-08",
+      "term_a": "암호화",
+      "meaning_a": "기밀성 보호를 목적으로 암호 알고리즘과 키를 사용해 평문을 암호문으로 변환; 해시·인코딩과 구분",
+      "term_b": "인코딩",
+      "meaning_b": "표현 형식을 변환",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft"
+    },
+    {
+      "id": "TERM-09",
+      "term_a": "가능성",
+      "meaning_a": "발생 여부가 확정되지 않음",
+      "term_b": "허용",
+      "meaning_b": "정책상 할 수 있음",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft"
+    },
+    {
+      "id": "TERM-10",
+      "term_a": "문서 확인",
+      "meaning_a": "출처가 해당 내용을 말함을 확인",
+      "term_b": "직접 관찰",
+      "meaning_b": "특정 환경에서 실행 결과를 관찰",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft"
+    },
+    {
+      "id": "TERM-11",
+      "term_a": "바이트",
+      "meaning_a": "데이터 크기 단위",
+      "term_b": "문자",
+      "meaning_b": "문자 수를 세는 단위; 바이트와 동일하다고 가정하지 않음",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft"
+    },
+    {
+      "id": "TERM-12",
+      "term_a": "timeout",
+      "meaning_a": "정의된 대기 제한을 초과한 상태",
+      "term_b": "cancel",
+      "meaning_b": "취소 요청이나 정책에 따라 중단한 상태",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft"
+    }
+  ]
+}

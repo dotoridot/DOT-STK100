@@ -1,0 +1,46 @@
+ZIP extraction checks — 2026-11-08
+
+$ python scripts/render_rules.py --check
+PASS: generated rule table matches 32 rules (structure only)
+
+exit_code=0
+
+$ python scripts/validate_package.py
+PASS: package structure and references
+{"rules": 32, "seed_cases": 48, "source_families": 24, "sources": 12, "term_pairs": 12}
+NOT CHECKED: semantic labels, facts, readability, host compatibility or real-world effectiveness
+
+exit_code=0
+
+$ python -m unittest discover -s tests -v
+test_broken_link_is_rejected (test_package.PackageTests.test_broken_link_is_rejected) ... ok
+test_duplicate_case_is_rejected (test_package.PackageTests.test_duplicate_case_is_rejected) ... ok
+test_duplicate_rule_is_rejected (test_package.PackageTests.test_duplicate_rule_is_rejected) ... ok
+test_duplicate_source_is_rejected (test_package.PackageTests.test_duplicate_source_is_rejected) ... ok
+test_invalid_rule_level_is_rejected (test_package.PackageTests.test_invalid_rule_level_is_rejected) ... ok
+test_link_escape_is_rejected (test_package.PackageTests.test_link_escape_is_rejected) ... ok
+test_links_inside_fences_are_not_checked (test_package.PackageTests.test_links_inside_fences_are_not_checked) ... ok
+test_local_links_work (test_package.PackageTests.test_local_links_work) ... ok
+test_metadata_requires_description (test_package.PackageTests.test_metadata_requires_description) ... ok
+test_metadata_version_mismatch_is_rejected (test_package.PackageTests.test_metadata_version_mismatch_is_rejected) ... ok
+test_missing_package_fails_without_traceback (test_package.PackageTests.test_missing_package_fails_without_traceback) ... ok
+test_missing_rule_requirement_is_rejected (test_package.PackageTests.test_missing_rule_requirement_is_rejected) ... ok
+test_missing_source_scope_is_rejected (test_package.PackageTests.test_missing_source_scope_is_rejected) ... ok
+test_render_escapes_table_delimiters (test_package.PackageTests.test_render_escapes_table_delimiters) ... ok
+test_render_is_idempotent (test_package.PackageTests.test_render_is_idempotent) ... ok
+test_render_rejects_duplicate_marker (test_package.PackageTests.test_render_rejects_duplicate_marker) ... ok
+test_render_rejects_missing_marker (test_package.PackageTests.test_render_rejects_missing_marker) ... ok
+test_render_rejects_reversed_markers (test_package.PackageTests.test_render_rejects_reversed_markers) ... ok
+test_seed_cannot_become_holdout_silently (test_package.PackageTests.test_seed_cannot_become_holdout_silently) ... ok
+test_seed_cannot_claim_human_validation_silently (test_package.PackageTests.test_seed_cannot_claim_human_validation_silently) ... ok
+test_unknown_case_label_is_rejected (test_package.PackageTests.test_unknown_case_label_is_rejected) ... ok
+test_unknown_case_rule_is_rejected (test_package.PackageTests.test_unknown_case_rule_is_rejected) ... ok
+test_unknown_rule_source_is_rejected (test_package.PackageTests.test_unknown_rule_source_is_rejected) ... ok
+test_valid_package (test_package.PackageTests.test_valid_package) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.015s
+
+OK
+
+exit_code=0

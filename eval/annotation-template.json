@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1",
+  "execution_state": "not_run",
+  "input_id": null,
+  "source_family_id": null,
+  "spec_version": "0.2.0-draft.3",
+  "model": null,
+  "host_version": null,
+  "prompt_hash": null,
+  "source_hash": null,
+  "candidate_hash": null,
+  "reviewer": null,
+  "independent_human_review": false,
+  "verdict": null,
+  "findings": [],
+  "annotation_notes": "작성 템플릿이다. null은 미기록을 뜻한다. 실제 실행·검토 후 채운다."
+}

@@ -1,0 +1,24 @@
+{
+  "author": "dotoridot",
+  "project": "YUPK-STK100",
+  "skill_slug": "yupk-stk100",
+  "changed_files": [
+    "AUTHORS.md",
+    "CITATION.cff",
+    "CONTRIBUTING.md",
+    "LICENSE.md",
+    "LICENSES/MIT.txt",
+    "NOTICE.md",
+    "README.md",
+    "SKILL.md",
+    "docs/AGENT-HANDOFF.md",
+    "docs/DESIGN-DECISIONS.md",
+    "docs/IMPLEMENTATION-PLAN.md",
+    "docs/RELEASE-CHECKLIST.md",
+    "references/YUPK-STK100-SPEC.md",
+    "scripts/validate_package.py"
+  ],
+  "tests_passed": 49,
+  "github_identity_confirmed": false,
+  "remote_mutations": []
+}

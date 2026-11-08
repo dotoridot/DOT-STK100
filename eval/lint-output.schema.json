@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "YUPK-STK100 report-only static risk candidates",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool_version",
+    "spec_version",
+    "input_hashes",
+    "config_hashes",
+    "span_convention",
+    "checks_run",
+    "checks_skipped",
+    "findings",
+    "notice"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1"
+    },
+    "tool_version": {
+      "type": "string"
+    },
+    "spec_version": {
+      "type": "string"
+    },
+    "input_hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "candidate"
+      ],
+      "properties": {
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "candidate": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "config_hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "terms",
+        "distinctions"
+      ],
+      "properties": {
+        "terms": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "distinctions": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "span_convention": {
+      "type": "string"
+    },
+    "checks_run": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "checks_skipped": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "check",
+          "rule_id",
+          "severity",
+          "certainty",
+          "source_span",
+          "candidate_span",
+          "message",
+          "next_action"
+        ],
+        "properties": {
+          "check": {
+            "enum": [
+              "protected",
+              "values",
+              "identifiers",
+              "negation",
+              "uncertainty",
+              "conditions",
+              "subject",
+              "terminology"
+            ]
+          },
+          "rule_id": {
+            "type": "string",
+            "pattern": "^YSK-[MKEPQ][0-9]{2}$"
+          },
+          "severity": {
+            "const": "WARN"
+          },
+          "certainty": {
+            "const": "candidate"
+          },
+          "source_span": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "start",
+                  "end",
+                  "line",
+                  "column",
+                  "quote"
+                ],
+                "properties": {
+                  "start": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "end": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "column": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          },
+          "candidate_span": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "start",
+                  "end",
+                  "line",
+                  "column",
+                  "quote"
+                ],
+                "properties": {
+                  "start": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "end": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "column": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "next_action": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "notice": {
+      "type": "string"
+    }
+  }
+}
