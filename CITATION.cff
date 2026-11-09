@@ -3,7 +3,7 @@ message: "DOT-STK100의 규격·스킬을 인용할 때 dotoridot과 사용한 �
 title: "DOT-STK100: DOT Simplified Technical Korean"
 authors:
   - name: "dotoridot"
-version: "0.2.0-draft.3"
+version: "0.2.0-draft.4"
 abstract: "한국어 기술 설명의 의미 보존, 명료성, 근거 관리를 위한 독립 작성 규격과 에이전트 스킬 초안."
 keywords:
   - Korean
