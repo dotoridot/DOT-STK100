@@ -157,7 +157,7 @@
       "section": "한국어 표현",
       "level": "MUST",
       "title": "용어 일관성과 구분",
-      "requirement": "같은 개념에는 같은 기준 용어를 사용하고 서로 다른 개념은 합치지 않는다.",
+      "requirement": "같은 개념에는 같은 기준 용어를 사용하고 서로 다른 개념은 합치지 않는다. 구별이 필요한 용어는 용어집 ID와 관련 규칙 ID, 정의, 올바른 예시, 잘못된 예시와 예외를 연결해 검토한다.",
       "exception": "원문 인용·UI 고유 표기·프로젝트 정의는 예외다. 용어집에 예외와 범위를 남긴다.",
       "verification": "term_candidate_plus_human_review",
       "evidence_status": "project_design_not_empirically_validated",

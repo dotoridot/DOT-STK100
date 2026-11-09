@@ -12,7 +12,7 @@ import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-TOOL_VERSION = "0.1.0"
+TOOL_VERSION = "0.1.1"
 CHECKS = ("protected", "values", "identifiers", "negation", "uncertainty",
           "conditions", "subject", "terminology")
 
@@ -160,7 +160,7 @@ def review(source: str | None, candidate: str, term_config: dict | None = None) 
             a, b = entry["term_a"], entry["term_b"]
             if (sm.count(a) > cm.count(a) and cm.count(b) > sm.count(b)) or (sm.count(b) > cm.count(b) and cm.count(a) > sm.count(a)):
                 old, new = (a, b) if sm.count(a) > cm.count(a) else (b, a)
-                add("terminology", "YSK-K05", f"서로 다른 개념인 {a}/{b}의 사용량이 바뀌었습니다. 역할을 대조하세요.",
+                add("terminology", "YSK-K05", f"{entry['id']}: 서로 다른 개념인 {a}/{b}의 사용량이 바뀌었습니다. terminology.json의 정의와 예외를 대조하세요.",
                     Token(sm.index(old), sm.index(old)+len(old), old, "term"),
                     Token(cm.index(new), cm.index(new)+len(new), new, "term"))
     # Candidate-only hints also run for unchanged documents. These do not assert missing actors.

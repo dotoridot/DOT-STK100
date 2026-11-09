@@ -48,11 +48,21 @@ def evaluate(cases: list[dict]) -> dict:
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--cases', type=Path, default=ROOT/'eval/seed-cases.jsonl')
+    inputs = parser.add_mutually_exclusive_group()
+    inputs.add_argument('--cases', type=Path, default=ROOT/'eval/seed-cases.jsonl')
+    inputs.add_argument('--terminology-examples', action='store_true',
+                        help='Use provisional examples embedded in the terminology dictionary')
     args = parser.parse_args(argv)
     try:
-        raw = args.cases.read_bytes()
-        cases = [json.loads(x) for x in raw.decode('utf-8').splitlines() if x.strip()]
+        if args.terminology_examples:
+            raw = (ROOT/'references/terminology.json').read_bytes()
+            terms = json.loads(raw)
+            cases = [{**example, 'case_id': f"{entry['id']}-{index}", 'pair_id': entry['id']}
+                     for entry in terms['entries']
+                     for index, example in enumerate(entry['examples'], 1)]
+        else:
+            raw = args.cases.read_bytes()
+            cases = [json.loads(x) for x in raw.decode('utf-8').splitlines() if x.strip()]
         if not cases or len({c['case_id'] for c in cases}) != len(cases):
             raise ValueError('empty or duplicate cases')
         if any(c.get('label_status') != 'ai_draft_not_human_adjudicated' or c.get('split') != 'development_only' for c in cases):
