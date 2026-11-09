@@ -16,8 +16,10 @@ def evaluate(cases: list[dict]) -> dict:
     matrix = {key: 0 for key in ("tp", "fp", "tn", "fn")}
     rows = []
     needs_context = 0
+    config_hashes = None
     for case in cases:
         result = review(case['source'], case['candidate'])
+        config_hashes = result['config_hashes']
         warned = bool(result['findings'])
         label = case['expected_review']
         if label == 'needs_context':
@@ -34,7 +36,7 @@ def evaluate(cases: list[dict]) -> dict:
                      'checks': sorted({f['check'] for f in result['findings']}), 'triage_outcome': outcome})
     ratio = lambda a, b: a / b if b else None
     return {'evaluation_kind': 'development_warning_triage_against_ai_draft_labels',
-            'human_validated': False, 'unit': 'one_candidate_document_any_warning',
+            'human_validated': False, 'config_hashes': config_hashes, 'unit': 'one_candidate_document_any_warning',
             'case_count': len(cases), 'source_family_count': len({c['pair_id'] for c in cases}),
             'confusion_matrix_provisional': matrix, 'excluded_needs_context': needs_context,
             'provisional_precision': ratio(matrix['tp'], matrix['tp'] + matrix['fp']),

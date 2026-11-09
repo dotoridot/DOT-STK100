@@ -21,6 +21,7 @@ except ImportError:
 RULE_ID = re.compile(r"^YSK-[MKEPQ]\d{2}$")
 LABELS = {"compatible", "meaning_changed", "needs_context"}
 REQUIRED = (
+    "references/preferred-expressions.json", "references/EXPRESSIONS.md",
     "README.md", "SKILL.md", "AGENTS.md", "AUTHORS.md", "CITATION.cff", "LICENSE.md",
     "NOTICE.md", "CONTRIBUTING.md", "CHANGELOG.md", "LICENSES/MIT.txt",
     "rules/rules.json", "references/DOT-STK100-SPEC.md", "references/RESEARCH.md",
@@ -147,6 +148,75 @@ def validate_cases(cases: list[object], rule_ids: set[str]) -> list[str]:
     return errors
 
 
+def validate_examples(examples: object, loc: str) -> list[str]:
+    """Shared development-example contract; labels are not human ground truth."""
+    if not isinstance(examples, list) or not examples:
+        return [f"{loc}: examples must be a nonempty list"]
+    errors: list[str] = []
+    labels: set[str] = set()
+    for example in examples:
+        if not isinstance(example, dict):
+            errors.append(f"{loc}: example must be an object")
+            continue
+        for key in ("source", "candidate", "reason"):
+            if not nonempty(example.get(key)):
+                errors.append(f"{loc}: example missing {key}")
+        label = example.get("expected_review")
+        if not isinstance(label, str) or label not in LABELS:
+            errors.append(f"{loc}: invalid example label")
+        else:
+            labels.add(label)
+        for key, expected in (("origin", "synthetic_original"), ("split", "development_only"),
+                              ("label_status", "ai_draft_not_human_adjudicated")):
+            if example.get(key) != expected:
+                errors.append(f"{loc}: example {key} must remain {expected}")
+    if labels != LABELS:
+        errors.append(f"{loc}: examples must cover compatible, meaning_changed and needs_context")
+    return errors
+
+
+def validate_expressions(data: object, rule_ids: set[str]) -> list[str]:
+    if not isinstance(data, dict) or not isinstance(data.get("entries"), list):
+        return ["expressions: expected an entries list"]
+    errors: list[str] = []
+    if data.get("schema_version") != "0.1" or not data["entries"]:
+        errors.append("expressions: expected schema_version 0.1 and nonempty entries")
+    seen: set[str] = set()
+    signals_seen: set[str] = set()
+    for index, entry in enumerate(data["entries"], 1):
+        loc = f"expressions[{index}]"
+        if not isinstance(entry, dict):
+            errors.append(f"{loc}: expected an object")
+            continue
+        eid = entry.get("id")
+        if not isinstance(eid, str) or not re.fullmatch(r"EXPR-[0-9]{2}", eid):
+            errors.append(f"{loc}: invalid id")
+        elif eid in seen:
+            errors.append(f"{loc}: duplicate id")
+        else:
+            seen.add(eid)
+        for key in ("preferred", "meaning"):
+            if not nonempty(entry.get(key)):
+                errors.append(f"{loc}: missing {key}")
+        for key in ("signals", "conditions", "exceptions", "rule_ids"):
+            values = entry.get(key)
+            if not isinstance(values, list) or not values or any(not nonempty(v) for v in values):
+                errors.append(f"{loc}: invalid {key}")
+                continue
+            if len(set(values)) != len(values):
+                errors.append(f"{loc}: duplicate {key}")
+            if key == "rule_ids" and any(v not in rule_ids for v in values):
+                errors.append(f"{loc}: unknown rule id")
+            if key == "signals":
+                if signals_seen.intersection(values):
+                    errors.append(f"{loc}: duplicate signal across entries")
+                signals_seen.update(values)
+        if entry.get("replacement") != "never_automatic":
+            errors.append(f"{loc}: automatic replacement is not allowed")
+        errors.extend(validate_examples(entry.get("examples"), loc))
+    return errors
+
+
 def validate_terminology(data: object, rule_ids: set[str]) -> list[str]:
     """Validate dictionary structure and provisional labels, not their meaning."""
     if not isinstance(data, dict) or not isinstance(data.get("entries"), list):
@@ -184,29 +254,7 @@ def validate_terminology(data: object, rule_ids: set[str]) -> list[str]:
         exceptions = term.get("exceptions")
         if not isinstance(exceptions, list) or not exceptions or any(not nonempty(x) for x in exceptions):
             errors.append(f"{loc}: exceptions must be nonempty strings")
-        examples = term.get("examples")
-        if not isinstance(examples, list) or not examples:
-            errors.append(f"{loc}: examples must be a nonempty list")
-            continue
-        labels: set[str] = set()
-        for example in examples:
-            if not isinstance(example, dict):
-                errors.append(f"{loc}: example must be an object")
-                continue
-            for key in ("source", "candidate", "reason"):
-                if not nonempty(example.get(key)):
-                    errors.append(f"{loc}: example missing {key}")
-            label = example.get("expected_review")
-            if not isinstance(label, str) or label not in LABELS:
-                errors.append(f"{loc}: invalid example label")
-            else:
-                labels.add(label)
-            for key, expected in (("origin", "synthetic_original"), ("split", "development_only"),
-                                  ("label_status", "ai_draft_not_human_adjudicated")):
-                if example.get(key) != expected:
-                    errors.append(f"{loc}: example {key} must remain {expected}")
-        if labels != LABELS:
-            errors.append(f"{loc}: examples must cover compatible, meaning_changed and needs_context")
+        errors.extend(validate_examples(term.get("examples"), loc))
     return errors
 
 
@@ -311,9 +359,13 @@ def validate(root: Path) -> tuple[list[str], dict[str, int]]:
         errors.extend(validate_terminology(terms, rule_ids))
         term_ids = {t["id"] for t in terms.get("entries", [])
                     if isinstance(t, dict) and isinstance(t.get("id"), str)}
+        expressions = json.loads((root / "references/preferred-expressions.json").read_text(encoding="utf-8"))
+        if expressions.get("version") != rules.get("version"):
+            errors.append("expressions version mismatch")
+        errors.extend(validate_expressions(expressions, rule_ids))
         counts = {"rules": len(rule_ids), "sources": len(source_ids), "seed_cases": len(cases),
                   "source_families": len({c["pair_id"] for c in cases if isinstance(c, dict) and isinstance(c.get("pair_id"), str)}),
-                  "term_pairs": len(term_ids)}
+                  "term_pairs": len(term_ids), "preferred_expressions": len(expressions["entries"])}
     except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError, AttributeError) as exc:
         errors.append(f"package parse/check error: {exc}")
     return errors, counts

@@ -12,7 +12,7 @@ import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-TOOL_VERSION = "0.1.1"
+TOOL_VERSION = "0.2.0"
 CHECKS = ("protected", "values", "identifiers", "negation", "uncertainty",
           "conditions", "subject", "terminology")
 
@@ -178,15 +178,26 @@ def review(source: str | None, candidate: str, term_config: dict | None = None) 
             hit = variants[1][1]
             add("terminology", "YSK-K05", f"{group['id']}: 표기 후보가 혼용됩니다. 프로젝트 정의가 같은지 먼저 확인하세요.",
                 b=Token(hit.start(), hit.end(), hit.group(), "term"))
+    expressions_raw = (ROOT / "references/preferred-expressions.json").read_bytes()
+    expressions = json.loads(expressions_raw)
+    for entry in expressions["entries"]:
+        for signal in entry["signals"]:
+            pattern = r"(?<![A-Za-z0-9_가-힣])" + re.escape(signal)
+            for hit in re.finditer(pattern, cm):
+                add("terminology", "YSK-K07",
+                    f"{entry['id']}: 권장 표현 후보는 {entry['preferred']}입니다. "
+                    "적용 조건과 예외, 부정과 의무 수준을 확인하세요. 원문 유지가 적절할 수 있습니다.",
+                    b=Token(hit.start(), hit.end(), hit.group(), "expression"))
     skipped = ["semantic_equivalence", "facts", "causal_and_actor_binding", "full_commonmark",
                "human_evaluation", "length_disabled_by_default"]
     if source is None:
         skipped.extend("source_comparison:" + check for check in CHECKS if check not in ("subject", "terminology"))
-    return {"schema_version": "0.1", "tool_version": TOOL_VERSION, "spec_version": rules["version"],
+    return {"schema_version": "0.2", "tool_version": TOOL_VERSION, "spec_version": rules["version"],
             "input_hashes": {"source": hashlib.sha256(src.encode()).hexdigest() if source is not None else None,
                              "candidate": hashlib.sha256(candidate.encode()).hexdigest()},
             "config_hashes": {"terms": hashlib.sha256(json.dumps(term_config, ensure_ascii=False, sort_keys=True).encode()).hexdigest(),
-                              "distinctions": hashlib.sha256((ROOT / "references/terminology.json").read_bytes()).hexdigest()},
+                              "distinctions": hashlib.sha256((ROOT / "references/terminology.json").read_bytes()).hexdigest(),
+                              "expressions": hashlib.sha256(expressions_raw).hexdigest()},
             "span_convention": "0-based Python Unicode code points; end exclusive; line/column 1-based; no normalization",
             "checks_run": list(CHECKS) if source is not None else ["subject", "terminology"],
             "checks_skipped": skipped, "findings": findings,
