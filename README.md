@@ -4,7 +4,7 @@
 
 ASD-STE100의 접근을 한국어에 응용했습니다. 독자가 조건과 행동을 이해하고, 작성자가 기술적 의미를 보존하며 설명을 다듬도록 돕는 것을 목표로 합니다.
 
-저작자: **dotoridot** · 기획·프로젝트 관리: **dotoridot** · 버전: `0.2.0-draft.4` · 상태: 연구 기반 설계 초안, 효과 검증 전
+저작자: **dotoridot** · 기획·프로젝트 관리: **dotoridot** · 버전: `0.0.2` · 상태: 정식 버전, 효과 검증 전
 
 ## 만든 이유
 
@@ -201,4 +201,4 @@ python scripts/evaluate_linter.py
 
 ## 검토 결과와 기여
 
-[초안 감사와 단계별 상태](reports/AUDIT.md), [실행 기록](reports/VALIDATION.md), [개발 자료 경고 집계](reports/LINTER-EVALUATION.json), [기여 안내](CONTRIBUTING.md), [변경 이력](CHANGELOG.md)을 제공합니다. 공개 저장소에 초안과 도구를 업로드했습니다. 독립 사람 검토, 효과 평가와 실제 호스트 모델 동작 검증은 아직 수행하지 않았습니다.
+[초안 감사와 단계별 상태](reports/AUDIT.md), [실행 기록](reports/VALIDATION.md), [개발 자료 경고 집계](reports/LINTER-EVALUATION.json), [기여 안내](CONTRIBUTING.md), [변경 이력](CHANGELOG.md)을 제공합니다. 공개 저장소에서 규격과 도구를 제공합니다. 독립 사람 검토, 효과 평가와 실제 호스트 모델 동작 검증은 아직 수행하지 않았습니다.
