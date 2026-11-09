@@ -1,6 +1,6 @@
 {
   "version": "0.0.2",
-  "policy": "검토용 의미 구분. 자동 치환 사전이 아님. 프로젝트 정의·UI 원문·인용을 우선하며 의미 충돌을 보고한다.",
+  "policy": "기술적으로 구별해야 하는 개념의 검토용 사전이다. 한국어 전체의 허용 어휘를 제한하지 않는다. 자동 치환하지 않으며 프로젝트 정의, UI 원문과 인용을 우선한다. 정의가 다르거나 근거가 부족하면 needs_context로 남긴다. 예시는 공개 개발용 합성 자료이며 독립 사람 평가 정답이 아니다.",
   "entries": [
     {
       "id": "TERM-01",
@@ -10,7 +10,43 @@
       "meaning_b": "동작이나 접근을 막는 것",
       "replacement": "never_automatic",
       "scope": "project_writing_convention",
-      "status": "draft"
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-M01"
+      ],
+      "exceptions": [
+        "제품이 탐지와 차단을 함께 수행한다고 명시한 경우에는 두 행동을 각각 기록한다."
+      ],
+      "examples": [
+        {
+          "source": "변경 흔적을 탐지했지만 접근은 차단하지 않았습니다.",
+          "candidate": "변경 흔적을 탐지했습니다. 접근은 차단하지 않았습니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "변경 흔적을 탐지했지만 접근은 차단하지 않았습니다.",
+          "candidate": "변경 흔적을 탐지하고 접근을 차단했습니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "보안 처리가 끝났습니다.",
+          "candidate": "접근을 차단했습니다.",
+          "expected_review": "needs_context",
+          "reason": "처리가 탐지인지 차단인지 알 수 없습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
     },
     {
       "id": "TERM-02",
@@ -20,7 +56,43 @@
       "meaning_b": "실행한 작업이 성공 조건을 충족하지 못한 상태",
       "replacement": "never_automatic",
       "scope": "project_writing_convention",
-      "status": "draft"
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-M07"
+      ],
+      "exceptions": [
+        "실행하지 못한 작업을 실패로 분류하는 제품 상태 코드는 그대로 보존하고 미수행 여부를 별도로 설명한다."
+      ],
+      "examples": [
+        {
+          "source": "권한이 없어 검사는 미수행 상태입니다.",
+          "candidate": "권한이 없으므로 검사는 미수행 상태입니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "권한이 없어 검사는 미수행 상태입니다.",
+          "candidate": "권한이 없어 검사는 실패 상태입니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "검사 결과가 없습니다.",
+          "candidate": "검사가 실패했습니다.",
+          "expected_review": "needs_context",
+          "reason": "미실행, 실행 중, 결과 유실 중 어느 상태인지 알 수 없습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
     },
     {
       "id": "TERM-03",
@@ -30,7 +102,43 @@
       "meaning_b": "이 프로젝트 평가에서 양성 조건을 충족하는 대상을 양성으로 판정하지 못함",
       "replacement": "never_automatic",
       "scope": "project_writing_convention",
-      "status": "draft"
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-M03"
+      ],
+      "exceptions": [
+        "양성 조건은 평가마다 정한다. 기준이 다르면 해당 평가 정의를 먼저 기록한다."
+      ],
+      "examples": [
+        {
+          "source": "정상 앱을 위험 앱으로 판정한 결과를 오탐으로 기록했습니다.",
+          "candidate": "오탐으로 기록한 결과는 정상 앱을 위험 앱으로 판정한 것입니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "정상 앱을 위험 앱으로 판정한 결과를 오탐으로 기록했습니다.",
+          "candidate": "정상 앱을 위험 앱으로 판정한 결과를 미탐으로 기록했습니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "분류 결과가 실제와 다릅니다.",
+          "candidate": "오탐입니다.",
+          "expected_review": "needs_context",
+          "reason": "실제 양성 기준과 예측 방향이 제공되지 않았습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
     },
     {
       "id": "TERM-04",
@@ -40,7 +148,43 @@
       "meaning_b": "특정 작업의 권한을 판단",
       "replacement": "never_automatic",
       "scope": "project_writing_convention",
-      "status": "draft"
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-M01"
+      ],
+      "exceptions": [
+        "외부 인증, 시험 인증 등 다른 뜻의 인증은 문맥과 프로젝트 정의를 따른다."
+      ],
+      "examples": [
+        {
+          "source": "인증으로 사용자 신원을 확인했습니다.",
+          "candidate": "사용자 신원을 인증으로 확인했습니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "인증으로 사용자 신원을 확인했습니다.",
+          "candidate": "인가로 사용자 신원을 확인했습니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "사용자 확인을 마쳤습니다.",
+          "candidate": "인가를 마쳤습니다.",
+          "expected_review": "needs_context",
+          "reason": "신원 확인과 권한 판단 중 어느 작업인지 알 수 없습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
     },
     {
       "id": "TERM-05",
@@ -50,7 +194,43 @@
       "meaning_b": "기능이 있으나 꺼져 있음",
       "replacement": "never_automatic",
       "scope": "project_writing_convention",
-      "status": "draft"
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-M01"
+      ],
+      "exceptions": [
+        "UI의 고유 상태 표기는 유지하고 기능 제공 여부와 설정 상태를 따로 확인한다."
+      ],
+      "examples": [
+        {
+          "source": "이 버전은 해당 기능을 미지원합니다.",
+          "candidate": "해당 기능은 이 버전에서 미지원입니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "이 버전은 해당 기능을 미지원합니다.",
+          "candidate": "이 버전은 해당 기능이 비활성화되어 있습니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "기능을 사용할 수 없습니다.",
+          "candidate": "기능이 비활성화되어 있습니다.",
+          "expected_review": "needs_context",
+          "reason": "기능 부재인지 설정이 꺼진 것인지 알 수 없습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
     },
     {
       "id": "TERM-06",
@@ -60,7 +240,43 @@
       "meaning_b": "정의된 수신자에게 결과 전달",
       "replacement": "never_automatic",
       "scope": "project_writing_convention",
-      "status": "draft"
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-M01"
+      ],
+      "exceptions": [
+        "보고서를 로컬에 기록하는 작업과 실제 수신자에게 전달하는 작업을 구분한다."
+      ],
+      "examples": [
+        {
+          "source": "결과를 로컬 로그에 기록했고 서버 보고는 하지 않았습니다.",
+          "candidate": "로컬 로그에는 결과를 기록했습니다. 서버 보고는 하지 않았습니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "결과를 로컬 로그에 기록했고 서버 보고는 하지 않았습니다.",
+          "candidate": "결과를 서버에 보고했습니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "결과 처리가 끝났습니다.",
+          "candidate": "결과 보고를 마쳤습니다.",
+          "expected_review": "needs_context",
+          "reason": "저장 위치와 수신자 전달 여부가 제공되지 않았습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
     },
     {
       "id": "TERM-07",
@@ -70,7 +286,44 @@
       "meaning_b": "기준과 근거로 주장을 확인",
       "replacement": "never_automatic",
       "scope": "project_writing_convention",
-      "status": "draft"
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-E02",
+        "YSK-Q03"
+      ],
+      "exceptions": [
+        "프로젝트에서 검사와 검증을 다른 의미로 정의하면 해당 정의와 확인 범위를 밝힌다."
+      ],
+      "examples": [
+        {
+          "source": "검사는 실행했지만 정확성 검증은 하지 않았습니다.",
+          "candidate": "검사를 실행했습니다. 정확성 검증은 하지 않았습니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "검사는 실행했지만 정확성 검증은 하지 않았습니다.",
+          "candidate": "검사로 정확성 검증을 완료했습니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "확인을 마쳤습니다.",
+          "candidate": "검증을 완료했습니다.",
+          "expected_review": "needs_context",
+          "reason": "확인 기준과 근거가 제공되지 않았습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
     },
     {
       "id": "TERM-08",
@@ -80,7 +333,43 @@
       "meaning_b": "표현 형식을 변환",
       "replacement": "never_automatic",
       "scope": "project_writing_convention",
-      "status": "draft"
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-M01"
+      ],
+      "exceptions": [
+        "API 이름과 UI 표기에 encryption이 포함돼도 실제 동작을 추측하지 않고 원문을 유지한다."
+      ],
+      "examples": [
+        {
+          "source": "기밀성 보호를 위해 키를 사용하는 알고리즘으로 데이터를 암호화합니다.",
+          "candidate": "데이터를 기밀성 보호용 키 기반 알고리즘으로 암호화합니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "기밀성 보호를 위해 키를 사용하는 알고리즘으로 데이터를 암호화합니다.",
+          "candidate": "기밀성 보호를 위해 데이터를 인코딩합니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "데이터를 변환했습니다.",
+          "candidate": "데이터를 암호화했습니다.",
+          "expected_review": "needs_context",
+          "reason": "알고리즘과 키 사용 여부가 제공되지 않았습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
     },
     {
       "id": "TERM-09",
@@ -90,7 +379,43 @@
       "meaning_b": "정책상 할 수 있음",
       "replacement": "never_automatic",
       "scope": "project_writing_convention",
-      "status": "draft"
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-M06"
+      ],
+      "exceptions": [
+        "할 수 있다는 능력, 허용, 가능성을 문맥 없이 한 가지 뜻으로 확정하지 않는다."
+      ],
+      "examples": [
+        {
+          "source": "이 오류가 다시 발생할 가능성이 있습니다.",
+          "candidate": "이 오류의 재발 가능성이 있습니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "이 오류가 다시 발생할 가능성이 있습니다.",
+          "candidate": "이 오류가 다시 발생하도록 허용합니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "다시 실행할 수 있습니다.",
+          "candidate": "다시 실행하도록 허용합니다.",
+          "expected_review": "needs_context",
+          "reason": "능력, 정책상 허용, 발생 가능성 중 뜻을 확정할 문맥이 없습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
     },
     {
       "id": "TERM-10",
@@ -100,7 +425,44 @@
       "meaning_b": "특정 환경에서 실행 결과를 관찰",
       "replacement": "never_automatic",
       "scope": "project_writing_convention",
-      "status": "draft"
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-E02",
+        "YSK-E03"
+      ],
+      "exceptions": [
+        "문서 확인과 직접 관찰을 모두 했으면 각각의 환경과 근거를 구분한다."
+      ],
+      "examples": [
+        {
+          "source": "설명서의 문서 확인만 했으며 실행 결과의 직접 관찰은 하지 않았습니다.",
+          "candidate": "문서 확인은 했습니다. 실행 결과의 직접 관찰은 하지 않았습니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "설명서의 문서 확인만 했으며 실행 결과의 직접 관찰은 하지 않았습니다.",
+          "candidate": "실행 결과를 직접 관찰했습니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "정상 동작을 확인했습니다.",
+          "candidate": "실행 결과를 직접 관찰했습니다.",
+          "expected_review": "needs_context",
+          "reason": "확인이 문서 열람인지 실행 관찰인지 알 수 없습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
     },
     {
       "id": "TERM-11",
@@ -110,7 +472,43 @@
       "meaning_b": "문자 수를 세는 단위; 바이트와 동일하다고 가정하지 않음",
       "replacement": "never_automatic",
       "scope": "project_writing_convention",
-      "status": "draft"
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-M04"
+      ],
+      "exceptions": [
+        "특정 인코딩에서 수치가 같더라도 원문의 단위를 임의로 바꾸지 않는다."
+      ],
+      "examples": [
+        {
+          "source": "입력 제한은 512바이트이며 문자 수 제한은 아닙니다.",
+          "candidate": "문자 수가 아니라 바이트 기준으로 입력을 512바이트로 제한합니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "입력 제한은 512바이트이며 문자 수 제한은 아닙니다.",
+          "candidate": "입력 제한은 512문자입니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "입력 제한은 512입니다.",
+          "candidate": "입력 제한은 512바이트입니다.",
+          "expected_review": "needs_context",
+          "reason": "단위와 문자 인코딩이 제공되지 않았습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
     },
     {
       "id": "TERM-12",
@@ -120,7 +518,230 @@
       "meaning_b": "취소 요청이나 정책에 따라 중단한 상태",
       "replacement": "never_automatic",
       "scope": "project_writing_convention",
-      "status": "draft"
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-M07"
+      ],
+      "exceptions": [
+        "제품이 timeout 후 취소 동작을 실행하면 원인 상태와 후속 취소 동작을 구분한다."
+      ],
+      "examples": [
+        {
+          "source": "대기 제한을 넘겨 timeout 상태가 되었습니다.",
+          "candidate": "timeout은 대기 제한을 넘겨 발생했습니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "대기 제한을 넘겨 timeout 상태가 되었습니다.",
+          "candidate": "취소 요청으로 cancel 상태가 되었습니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "요청이 중단됐습니다.",
+          "candidate": "요청이 cancel 상태가 됐습니다.",
+          "expected_review": "needs_context",
+          "reason": "대기 제한 초과인지 취소 요청인지 알 수 없습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
+    },
+    {
+      "id": "TERM-13",
+      "term_a": "지원",
+      "meaning_a": "제공자가 명시한 기능 또는 환경의 지원 범위",
+      "term_b": "호환",
+      "meaning_b": "지정한 환경이나 구성 요소를 함께 사용할 수 있다는 주장. 적용 조건과 근거를 별도로 확인",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-E02",
+        "YSK-E04"
+      ],
+      "exceptions": [
+        "지원과 호환의 의미를 프로젝트가 다르게 정의하면 그 정의와 적용 버전을 먼저 명시한다."
+      ],
+      "examples": [
+        {
+          "source": "제공자는 A 환경을 지원한다고 명시했습니다. 호환 여부를 실행으로 확인하지는 않았습니다.",
+          "candidate": "제공자가 명시한 지원 환경은 A입니다. 호환 여부는 실행으로 확인하지 않았습니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "제공자는 A 환경을 지원한다고 명시했습니다. 호환 여부를 실행으로 확인하지는 않았습니다.",
+          "candidate": "A 환경의 호환 여부를 실행으로 확인했습니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "A 환경을 사용할 수 있습니다.",
+          "candidate": "A 환경은 지원됩니다.",
+          "expected_review": "needs_context",
+          "reason": "제공자의 지원 선언인지 특정 환경에서의 관찰인지 알 수 없습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
+    },
+    {
+      "id": "TERM-14",
+      "term_a": "호환",
+      "meaning_a": "지정한 환경이나 구성 요소를 함께 사용할 수 있다는 주장. 적용 조건과 근거를 별도로 확인",
+      "term_b": "동작 확인",
+      "meaning_b": "기록된 특정 환경과 절차에서 관찰한 동작. 확인하지 않은 환경의 결과를 포함하지 않음",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-E02",
+        "YSK-M08"
+      ],
+      "exceptions": [
+        "호환 선언의 근거에 동작 확인이 포함돼도 실제 시험 범위를 전체 지원 범위로 확대하지 않는다."
+      ],
+      "examples": [
+        {
+          "source": "A 조합에서 로그인 동작 확인을 했습니다. 다른 조합의 호환 여부는 미확인입니다.",
+          "candidate": "로그인 동작 확인 범위는 A 조합입니다. 다른 조합의 호환 여부는 미확인입니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "A 조합에서 로그인 동작 확인을 했습니다. 다른 조합의 호환 여부는 미확인입니다.",
+          "candidate": "모든 조합의 호환을 확인했습니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "A에서 확인했습니다.",
+          "candidate": "A의 호환을 보장합니다.",
+          "expected_review": "needs_context",
+          "reason": "실행 환경, 확인 대상과 호환 범위가 제공되지 않았습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
+    },
+    {
+      "id": "TERM-15",
+      "term_a": "이상",
+      "meaning_a": "비교 기준값을 포함하는 크기 비교",
+      "term_b": "초과",
+      "meaning_b": "비교 기준값을 포함하지 않는 크기 비교",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-M04"
+      ],
+      "exceptions": [
+        "이상이 비정상이라는 뜻이면 비교 연산으로 취급하지 않는다. 수식과 인용의 연산자는 보존한다."
+      ],
+      "examples": [
+        {
+          "source": "온도가 30 이상이면 중단합니다.",
+          "candidate": "중단 조건은 온도 30 이상입니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "온도가 30 이상이면 중단합니다.",
+          "candidate": "온도가 30 초과이면 중단합니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "이상 상태가 보고됐습니다.",
+          "candidate": "초과 상태가 보고됐습니다.",
+          "expected_review": "needs_context",
+          "reason": "이상이 비교 연산인지 비정상 상태를 뜻하는지 알 수 없습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
+    },
+    {
+      "id": "TERM-16",
+      "term_a": "권장",
+      "meaning_a": "따르는 것을 권하지만 의무로 요구하지 않음",
+      "term_b": "필수",
+      "meaning_b": "해당 조건에서 반드시 충족해야 하는 요구",
+      "replacement": "never_automatic",
+      "scope": "project_writing_convention",
+      "status": "draft",
+      "rule_ids": [
+        "YSK-K05",
+        "YSK-M06"
+      ],
+      "exceptions": [
+        "정책 원문이 명시한 필수 조건을 문체 교정으로 권장으로 낮추거나 반대로 높이지 않는다."
+      ],
+      "examples": [
+        {
+          "source": "백업은 권장 사항이며 필수 요구가 아닙니다.",
+          "candidate": "백업을 권장합니다. 필수 요구는 아닙니다.",
+          "expected_review": "compatible",
+          "reason": "주어진 정의와 관찰 범위, 조건을 유지한 편집 예다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "백업은 권장 사항이며 필수 요구가 아닙니다.",
+          "candidate": "백업은 필수입니다.",
+          "expected_review": "meaning_changed",
+          "reason": "정의, 행동, 경계 또는 근거 상태가 원문과 달라진 반례다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        },
+        {
+          "source": "백업을 할 수 있습니다.",
+          "candidate": "백업은 필수입니다.",
+          "expected_review": "needs_context",
+          "reason": "허용, 능력과 의무 수준을 구분할 정책이 제공되지 않았습니다.",
+          "origin": "synthetic_original",
+          "split": "development_only",
+          "label_status": "ai_draft_not_human_adjudicated"
+        }
+      ]
     }
-  ]
+  ],
+  "schema_version": "0.2"
 }

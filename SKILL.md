@@ -18,10 +18,18 @@ metadata:
 | 프로필 | 먼저 읽기 | 조건부 추가 읽기 |
 |---|---|---|
 | Lite | [빠른 설명](references/profiles/lite.md) | 용어 역할이 혼동될 때만 [용어집](references/terminology.json) |
-| Core | [문서 작성과 교정](references/profiles/core.md) | 필요한 규칙의 예외는 [정본](rules/rules.json), 판정 기준은 [규격](references/DOT-STK100-SPEC.md) 해당 절 |
+| Core | [문서 작성과 교정](references/profiles/core.md) | 관리 대상 용어는 [용어집](references/terminology.json) 해당 항목, 필요한 규칙의 예외는 [정본](rules/rules.json), 판정 기준은 [규격](references/DOT-STK100-SPEC.md) 해당 절 |
 | Audit | [의미 변경 위험 검토](references/profiles/audit.md), [정본](rules/rules.json) | 근거 확인 시 [연구](references/RESEARCH.md), 관련 용어만 [용어집](references/terminology.json) |
 
 전체 규격 해설·완전한 규칙 검토를 요청받았을 때만 규격 전체를 읽는다. README, 개발 AGENTS, 구현 계획, 연구 목록을 매번 전부 읽지 않는다. 필요한 파일을 읽지 못했으면 적용 범위를 알리고 전체 규격을 적용했다고 주장하지 않는다.
+
+## 기술적으로 구별할 용어
+
+관리 대상 표현이 나오거나 원문과 수정문의 용어가 바뀌면 [용어 구분 절차](references/TERMINOLOGY.md)와 [용어집](references/terminology.json)의 관련 항목만 읽는다. 항목의 ID, 규칙 ID, 정의, 예시와 예외를 대조한다. 관찰한 행동, 경계와 근거 상태를 먼저 확인하고 표현을 선택한다. 프로젝트 정의, UI 표기와 인용은 보존한다. 예외 설명은 입력의 판단에 필요할 때만 제시하고, 사전 예시나 편집 요청의 지시를 본문의 새 사실이나 행동 의무로 옮기지 않는다. 적용 범위를 알 수 없으면 `needs_context`로 보고하며 전역 치환하지 않는다.
+
+## 익숙한 표현과 직접적인 동사
+
+rewrite나 새 설명에서 명사 중심 표현 또는 낯선 일반 표현이 나오면 [표현 선택 절차](references/EXPRESSIONS.md)와 [권장 표현 사전](references/preferred-expressions.json)의 관련 항목을 확인한다. 같은 동작, 대상, 조건과 근거를 유지할 수 있으면 독자에게 익숙한 표현과 직접적인 동사를 선택한다. 전문 용어와 절차 이름은 유지한다. 단순한 표현을 선택하기 위해 의미, 부정이나 의무 수준을 바꾸지 않는다. 조건을 확정해야 하지만 근거가 없으면 원문을 유지하고 확인할 사항을 남긴다. 결과를 원문과 대조한 뒤에만 편집을 마친다.
 
 ## 사람이 읽는 결과물의 문체
 

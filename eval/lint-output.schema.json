@@ -17,7 +17,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "0.1"
+      "const": "0.2"
     },
     "tool_version": {
       "type": "string"
@@ -51,7 +51,8 @@
       "additionalProperties": false,
       "required": [
         "terms",
-        "distinctions"
+        "distinctions",
+        "expressions"
       ],
       "properties": {
         "terms": {
@@ -59,6 +60,10 @@
           "pattern": "^[a-f0-9]{64}$"
         },
         "distinctions": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "expressions": {
           "type": "string",
           "pattern": "^[a-f0-9]{64}$"
         }
