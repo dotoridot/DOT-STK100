@@ -4,7 +4,7 @@ description: 한국어 기술 설명, SDK/API 문서, 코드 리뷰, 장애 보�
 license: MIT
 metadata:
   author: dotoridot
-  version: "0.2.0-draft.3"
+  version: "0.2.0-draft.4"
   status: "draft-unvalidated"
   license-status: "MIT"
 ---
@@ -22,6 +22,15 @@ metadata:
 | Audit | [의미 변경 위험 검토](references/profiles/audit.md), [정본](rules/rules.json) | 근거 확인 시 [연구](references/RESEARCH.md), 관련 용어만 [용어집](references/terminology.json) |
 
 전체 규격 해설·완전한 규칙 검토를 요청받았을 때만 규격 전체를 읽는다. README, 개발 AGENTS, 구현 계획, 연구 목록을 매번 전부 읽지 않는다. 필요한 파일을 읽지 못했으면 적용 범위를 알리고 전체 규격을 적용했다고 주장하지 않는다.
+
+## 사람이 읽는 결과물의 문체
+
+사람에게 전달할 설명이나 문서를 작성하거나, 말투 변경을 요청받으면 [문체 예시와 예외](references/HUMAN-PROSE.md)를 읽는다. 규칙 정본의 YSK-K07과 YSK-P04를 적용하고, 제목과 본문이 아래 기준을 충족하는지 확인한다.
+
+- 제목은 내용을 직접 드러내는 짧은 명사구로 쓴다.
+- 본문은 동료에게 사실, 이유와 조건을 설명한다. 에이전트의 처리 과정과 적용 규칙은 필요한 검토 기록으로 구분한다.
+- 작업 절차에서는 독자의 행동을 대상과 조건에 연결해 안내한다. 실제 경험, 감정이나 실행 이력은 근거가 있을 때만 쓴다.
+- FAQ, 인터뷰, 요청된 대화체와 에이전트용 작업 지시문은 목적에 맞는 형식을 유지한다. 원문의 말투와 인용은 보존하며, 사용자가 말투 변경을 요청한 범위에서만 바꾼다.
 
 ## 적용 전 경계
 

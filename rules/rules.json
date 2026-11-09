@@ -1,6 +1,6 @@
 {
   "name": "DOT-STK100",
-  "version": "0.2.0-draft.3",
+  "version": "0.2.0-draft.4",
   "status": "draft",
   "authority": "This file is the single source for rule IDs and rule text.",
   "rules": [
@@ -185,8 +185,8 @@
       "section": "한국어 표현",
       "level": "SHOULD",
       "title": "자연스러운 서술",
-      "requirement": "행동이 분명한 동사와 문법적으로 완결된 문장을 쓴다. 원문의 말투와 인용은 보존한다.",
-      "exception": "명사화·피동형·것·수·관련은 금지어가 아니다. 필요하면 유지한다.",
+      "requirement": "사람이 읽는 본문은 작성자가 동료에게 사실, 이유와 조건을 설명하는 말투로 쓴다. 행동이 분명한 동사와 문법적으로 완결된 문장을 사용한다. 작성 과정 보고는 본문과 구분하고, 원문의 말투와 인용은 보존한다.",
+      "exception": "사용자가 말투 변경을 요청하면 그 범위에서 바꾼다. 절차의 행동 안내, FAQ, 인터뷰, 요청된 대화체와 에이전트용 작업 지시문은 목적에 맞는 형식을 유지한다. 명사화, 피동형, 것, 수, 관련은 금지어가 아니며 필요하면 유지한다. 사람의 경험이나 실행 이력은 근거 없이 추가하지 않는다.",
       "verification": "human_style_review",
       "evidence_status": "project_design_not_empirically_validated",
       "sources": [
@@ -315,8 +315,8 @@
       "section": "절차와 구조",
       "level": "SHOULD",
       "title": "문서의 목적에 맞는 배치",
-      "requirement": "설명은 결론·원리·조건·한계를, 절차는 조건·조작·관찰 결과를 찾기 쉽게 배치한다.",
-      "exception": "모든 짧은 답변에 고정 목차를 강제하지 않는다.",
+      "requirement": "설명은 결론, 원리, 조건과 한계를, 절차는 조건, 조작과 관찰 결과를 찾기 쉽게 배치한다. 제목은 주제나 내용을 직접 드러내는 짧은 명사구를 기본으로 한다.",
+      "exception": "FAQ, 인터뷰와 사용자가 요청한 대화체는 질문형 제목을 사용할 수 있다. 모든 짧은 답변에 제목이나 고정 목차를 강제하지 않는다. 인용과 보호 구간은 유지한다.",
       "verification": "human_style_review",
       "evidence_status": "project_design_not_empirically_validated",
       "sources": [
