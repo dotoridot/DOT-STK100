@@ -4,26 +4,19 @@ use std::collections::{BTreeSet, HashSet};
 use std::path::Path;
 
 pub fn evaluate(root: &Path, cases: &Value) -> Result<Value, String> {
-    evaluate_inner(root, cases, None)
+    evaluate_for_cli(root, cases, None).map(|(result, _)| result)
 }
 
-pub(crate) fn evaluate_with_terminology(
-    root: &Path,
-    cases: &Value,
-    raw: &[u8],
-) -> Result<Value, String> {
-    evaluate_inner(root, cases, Some(raw))
-}
-
-fn evaluate_inner(
+pub(crate) fn evaluate_for_cli(
     root: &Path,
     cases: &Value,
     terminology_raw: Option<&[u8]>,
-) -> Result<Value, String> {
+) -> Result<(Value, Value), String> {
     let cases = cases.as_array().ok_or("cases must be an array")?;
     let (mut tp, mut fp, mut tn, mut fn_count, mut needs_context) = (0, 0, 0, 0, 0);
     let mut rows = Vec::new();
     let mut config_hashes = Value::Null;
+    let mut spec_version = Value::Null;
     let mut families = HashSet::new();
     let mut context: Option<Result<ReviewContext, String>> = None;
     for case in cases {
@@ -45,6 +38,7 @@ fn evaluate_inner(
             .map_err(Clone::clone)?
             .review(source, candidate)?;
         config_hashes = result["config_hashes"].clone();
+        spec_version = result["spec_version"].clone();
         let findings = result["findings"].as_array().ok_or("invalid findings")?;
         let warned = !findings.is_empty();
         let label = case
@@ -90,9 +84,10 @@ fn evaluate_inner(
             json!(a as f64 / b as f64)
         }
     };
-    Ok(
+    Ok((
         json!({ "evaluation_kind": "development_warning_triage_against_ai_draft_labels", "human_validated": false, "config_hashes": config_hashes, "unit": "one_candidate_document_any_warning", "case_count": cases.len(), "source_family_count": families.len(), "confusion_matrix_provisional": { "tp": tp, "fp": fp, "tn": tn, "fn": fn_count }, "excluded_needs_context": needs_context, "provisional_precision": ratio(tp, tp+fp), "provisional_recall": ratio(tp, tp+fn_count), "provisional_false_positive_rate": ratio(fp, fp+tn), "provisional_false_negative_rate": ratio(fn_count, fn_count+tp), "human_precision": null, "human_recall": null, "notice": "AI 초안 라벨 기준의 경고 발생 집계다. 경고의 타당성, 의미 판정 성능, 일반 정확도와 사람 평가가 아니다. 관련 없는 경고도 any-warning으로 센다. 같은 pair_id는 독립 표본이 아니다.", "cases": rows }),
-    )
+        spec_version,
+    ))
 }
 
 #[cfg(test)]
@@ -123,7 +118,7 @@ mod tests {
         }
         assert!(!root.join("references/terminology.json").exists());
         assert_eq!(
-            evaluate_with_terminology(&root, &cases, &raw).unwrap(),
+            evaluate_for_cli(&root, &cases, Some(&raw)).unwrap().0,
             expected
         );
         std::fs::remove_dir_all(root).unwrap();

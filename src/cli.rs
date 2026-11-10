@@ -277,11 +277,15 @@ fn execute(args: &[String]) -> Result<i32, String> {
             }) {
                 return Err("this evaluator accepts only provisional development data".into());
             }
-            let mut result = if terminology {
-                evaluate::evaluate_with_terminology(&root, &cases, &raw)?
-            } else {
-                evaluate::evaluate(&root, &cases)?
-            };
+            let (mut result, spec_version) = evaluate::evaluate_for_cli(
+                &root,
+                &cases,
+                if terminology {
+                    Some(raw.as_slice())
+                } else {
+                    None
+                },
+            )?;
             result["dataset_sha256"] = json!(format!("{:x}", Sha256::digest(&raw)));
             result["implementation_sha256"] = json!(format!(
                 "{:x}",
@@ -292,7 +296,7 @@ fn execute(args: &[String]) -> Result<i32, String> {
             ));
             result["implementation_kind"] = json!("rust_executable_sha256");
             result["evaluation_schema_version"] = json!("0.2");
-            result["spec_version"] = data(&root.join("rules/rules.json"))?["version"].clone();
+            result["spec_version"] = spec_version;
             println!(
                 "{}",
                 serde_json::to_string_pretty(&result).map_err(|e| e.to_string())?
