@@ -147,7 +147,7 @@ def main():
                 for target in ('README.md','../outside.md'):
                     if target.startswith('..'): (base.parent/'outside.md').write_text('outside')
                     link=base/'symlink.md';link.symlink_to(target);compare('validate',[str(base)]);link.unlink()
-                for text in ['[ok](README.md#title)','[bad](../outside.md)','[bad](%2e%2e/outside.md)','[bad](missing.md)','[external](https://example.invalid/)','[bad](dir/../missing.md)','[empty](//?q)','[bad](http://[)','[bad](http://[127.0.0.1])','[bad](http://[v1])','[bad](http://[::1]suffix)','[bad](http://ｅｘａｍｐｌｅ.com／x)','[ok](http://[::1]/)','[ok](http://[v1.example]/)']:
+                for text in ['[ok](README.md#title)','[bad](../outside.md)','[bad](%2e%2e/outside.md)','[bad](missing.md)','[external](https://example.invalid/)','[bad](dir/../missing.md)','[empty](//?q)','[bad](http://[)','[bad](http://[127.0.0.1])','[bad](http://[v1])','[bad](http://[::1]suffix)','[bad](http://ｅｘａｍｐｌｅ.com／x)','[ok](http://[::1]/)','[ok](http://[v1.example]/)','[bad](http://[::1%])','[bad](http://[::1%x%y])','[ok](http://[fe80::1%eth0]/)','[bad](%00)']:
                     compare('local_link_errors',[str(base),str(base/'doc.md'),text])
     finally:
         oracle.stdin.close();oracle.wait()

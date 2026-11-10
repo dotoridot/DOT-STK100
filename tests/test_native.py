@@ -43,10 +43,12 @@ class NativeRegressionTests(unittest.TestCase):
             local_link_errors(ROOT,ROOT/'README.md','[bad](http://[)')
 
     def test_urlsplit_brackets_and_normalization(self):
-        for target in ['http://[127.0.0.1]','http://[v1]','http://[::1]suffix','http://ｅｘａｍｐｌｅ.com／x']:
+        for target in ['http://[127.0.0.1]','http://[v1]','http://[::1]suffix','http://[::1%]','http://[::1%x%y]','http://ｅｘａｍｐｌｅ.com／x']:
             with self.subTest(target=target):
                 with self.assertRaises(ValueError):local_link_errors(ROOT,ROOT/'README.md',f'[bad]({target})')
-        for target in ['https://example.invalid/','http://[::1]/','http://[v1.example]/']:
+        with self.assertRaisesRegex(ValueError,'embedded null byte'):
+            local_link_errors(ROOT,ROOT/'README.md','[bad](%00)')
+        for target in ['https://example.invalid/','http://[::1]/','http://[v1.example]/','http://[fe80::1%eth0]/']:
             self.assertEqual(local_link_errors(ROOT,ROOT/'README.md',f'[ok]({target})'),[])
 
     def test_nested_build_directory_names_are_still_checked(self):

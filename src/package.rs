@@ -565,7 +565,16 @@ pub fn local_link_errors(root: &Path, document: &Path, text: &str) -> Result<Vec
                     return Err("IPvFuture address is invalid".into());
                 }
             } else {
-                let ip = host.split_once('%').map_or(host, |(ip, _)| ip);
+                let ip = if let Some((ip, scope)) = host.split_once('%') {
+                    if scope.is_empty() || scope.contains('%') {
+                        return Err(format!(
+                            "'{host}' does not appear to be an IPv4 or IPv6 address"
+                        ));
+                    }
+                    ip
+                } else {
+                    host
+                };
                 if ip.parse::<std::net::Ipv4Addr>().is_ok() {
                     return Err("An IPv4 address cannot be in brackets".into());
                 }
@@ -593,6 +602,9 @@ pub fn local_link_errors(root: &Path, document: &Path, text: &str) -> Result<Vec
             continue;
         }
         let decoded = percent_encoding::percent_decode_str(path_part).decode_utf8_lossy();
+        if decoded.contains('\0') {
+            return Err("embedded null byte".into());
+        }
         let path = resolve_path(
             &document
                 .parent()
