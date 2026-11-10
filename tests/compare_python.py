@@ -129,9 +129,13 @@ def main():
         if a.binary:
             run=subprocess.run([str(a.binary.resolve()),'bridge',op,'--root',str(ROOT)],input=json.dumps(args),text=True,capture_output=True)
             if 'error' in expected:
+                diagnostic_matches=run.stderr.strip()=='ERROR: '+expected['error']
+                # CPython/OS versions use different wording for the same rejected NUL path.
+                if op=='local_link_errors' and expected.get('error_type')=='ValueError' and expected['error'] in ('embedded null byte','embedded null character in path','lstat: embedded null character in path'):
+                    diagnostic_matches=run.stderr.strip()=='ERROR: embedded null byte'
                 if op=='validate_cases' and expected.get('error_type')=='TypeError' and any("unhashable type: '"+kind+"'" in expected['error'] for kind in ('list','dict')) and run.returncode==0 and json.loads(run.stdout)==['cases[1]: invalid expected_review']:
                     deltas.append({**row,'native_diagnostic':json.loads(run.stdout),'reason':'Malformed labels are now rejected with a validation diagnostic instead of a Python container exception.'})
-                elif run.returncode!=2 or run.stdout or (expected.get('error_type')=='ValueError' and op!='local_link_errors' and run.stderr.strip()!='ERROR: '+expected['error']) or (op=='local_link_errors' and not run.stderr.startswith('ERROR: ')):
+                elif run.returncode!=2 or run.stdout or (expected.get('error_type')=='ValueError' and not diagnostic_matches):
                     failures.append({**row,'actual':{'code':run.returncode,'out':run.stdout,'err':run.stderr}})
             elif run.returncode or json.loads(run.stdout)!=expected['ok']:
                 failures.append({**row,'actual':{'code':run.returncode,'out':run.stdout,'err':run.stderr}})
