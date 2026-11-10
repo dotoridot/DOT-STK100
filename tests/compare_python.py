@@ -7,7 +7,6 @@ not semantic validity, host model behavior, or unobserved external consumers.
 import argparse
 import copy
 import hashlib
-import itertools
 import json
 from pathlib import Path
 import random
@@ -34,7 +33,7 @@ for line in sys.stdin:
         result=getattr(module,op)(*a)
         print(json.dumps({'ok':result},ensure_ascii=False,default=lambda x:dataclasses.asdict(x)),flush=True)
     except Exception as ex:
-        print(json.dumps({'error':str(ex)}),flush=True)
+        print(json.dumps({'error':str(ex),'error_type':type(ex).__name__}),flush=True)
 '''
 
 def inputs(baseline, section):
@@ -68,6 +67,10 @@ def inputs(baseline, section):
         for n in (199,200,250): yield 'review',['3회 '*n+'5회','5회 '+'3회 '*n,None]
         custom={'groups':[{'id':'CUSTOM','canonical':'캐시','variants':['cache']}], 'extra': {'z':1,'a':'한글'}}
         yield 'review',[None,'캐시 cache',custom]
+        for literal in [r'\s',r'\b',r'\\b',r'\d',r'A\s']:
+            yield 'review',[None,literal+' alias',{'groups':[{'id':'LITERAL','canonical':literal,'variants':['alias']}]}]
+        for number in [0.1,1e-7,1e-5,1e16,1e20,-0.0,123456789012345678901234567890]:
+            yield 'review',[None,'캐시 cache',dict(custom,extra={'number':number})]
         for bad in [None,[],{}, {'groups':None}, {'groups':[{}]}, {'groups':[{'id':'x','canonical':'a','variants':['a']}]}, {'groups':[{'id':'x','canonical':'a','variants':['b']}, {'id':'x','canonical':'b','variants':['c']}]}]:
             yield 'validate_term_config',[bad]
         yield 'evaluate',[[]]
@@ -107,17 +110,28 @@ def inputs(baseline, section):
         for val in [None,[],{},'', ' ', '\x1c', '\u00a0', '한글', 7, True]: yield 'nonempty',[val]
 
 
+def verify_baseline(path):
+    manifest=json.loads((Path(__file__).with_name('python-baseline-manifest.json')).read_text())
+    mismatches=[name for name,digest in manifest.items() if not (path/name).is_file() or hashlib.sha256((path/name).read_bytes()).hexdigest()!=digest]
+    if mismatches:raise ValueError('baseline integrity mismatch: '+', '.join(mismatches))
+    return hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest()
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--baseline',required=True,type=Path);p.add_argument('--binary',type=Path);p.add_argument('--capture',type=Path);p.add_argument('--section',choices=['all','lint','render','package'],default='all');a=p.parse_args()
+    provenance=verify_baseline(a.baseline)
     oracle=subprocess.Popen([sys.executable,'-u','-c',ORACLE,str(a.baseline.resolve())],stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True)
-    rows=[];failures=[]
+    rows=[];failures=[];deltas=[]
     def compare(op,args):
         item={'op':op,'args':args};oracle.stdin.write(json.dumps(item)+'\n');oracle.stdin.flush()
         expected=json.loads(oracle.stdout.readline());row={**item,'expected':expected};rows.append(row)
         if a.binary:
             run=subprocess.run([str(a.binary.resolve()),'bridge',op,'--root',str(ROOT)],input=json.dumps(args),text=True,capture_output=True)
             if 'error' in expected:
-                if run.returncode!=2: failures.append({**row,'actual':{'code':run.returncode,'out':run.stdout,'err':run.stderr}})
+                if op=='validate_cases' and expected.get('error_type')=='TypeError' and expected['error'] in ("unhashable type: 'list'","unhashable type: 'dict'") and run.returncode==0 and json.loads(run.stdout)==['cases[1]: invalid expected_review']:
+                    deltas.append({**row,'native_diagnostic':json.loads(run.stdout),'reason':'Malformed labels are now rejected with a validation diagnostic instead of a Python container exception.'})
+                elif run.returncode!=2 or run.stdout or (expected.get('error_type')=='ValueError' and run.stderr.strip()!='ERROR: '+expected['error']):
+                    failures.append({**row,'actual':{'code':run.returncode,'out':run.stdout,'err':run.stderr}})
             elif run.returncode or json.loads(run.stdout)!=expected['ok']:
                 failures.append({**row,'actual':{'code':run.returncode,'out':run.stdout,'err':run.stderr}})
     try:
@@ -136,8 +150,8 @@ def main():
                     compare('local_link_errors',[str(base),str(base/'doc.md'),text])
     finally:
         oracle.stdin.close();oracle.wait()
-    summary={'baseline_sha':BASELINE,'section':a.section,'comparisons':len(rows),'failures':len(failures)}
-    if a.capture:a.capture.write_text(json.dumps({'summary':summary,'cases':rows,'failures':failures},ensure_ascii=False,indent=2)+'\n')
+    summary={'baseline_sha':BASELINE,'section':a.section,'comparisons':len(rows),'failures':len(failures),'intentional_deltas':len(deltas),'baseline_manifest_sha256':provenance,'python':sys.version,'binary_sha256':hashlib.sha256(a.binary.read_bytes()).hexdigest() if a.binary else None}
+    if a.capture:a.capture.write_text(json.dumps({'summary':summary,'cases':rows,'failures':failures,'intentional_deltas':deltas},ensure_ascii=False,indent=2)+'\n')
     print(json.dumps(summary))
     for f in failures[:8]: print(json.dumps(f,ensure_ascii=False))
     return bool(failures)
