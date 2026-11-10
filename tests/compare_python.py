@@ -128,7 +128,7 @@ def main():
         if a.binary:
             run=subprocess.run([str(a.binary.resolve()),'bridge',op,'--root',str(ROOT)],input=json.dumps(args),text=True,capture_output=True)
             if 'error' in expected:
-                if op=='validate_cases' and expected.get('error_type')=='TypeError' and expected['error'] in ("unhashable type: 'list'","unhashable type: 'dict'") and run.returncode==0 and json.loads(run.stdout)==['cases[1]: invalid expected_review']:
+                if op=='validate_cases' and expected.get('error_type')=='TypeError' and any("unhashable type: '"+kind+"'" in expected['error'] for kind in ('list','dict')) and run.returncode==0 and json.loads(run.stdout)==['cases[1]: invalid expected_review']:
                     deltas.append({**row,'native_diagnostic':json.loads(run.stdout),'reason':'Malformed labels are now rejected with a validation diagnostic instead of a Python container exception.'})
                 elif run.returncode!=2 or run.stdout or (expected.get('error_type')=='ValueError' and run.stderr.strip()!='ERROR: '+expected['error']):
                     failures.append({**row,'actual':{'code':run.returncode,'out':run.stdout,'err':run.stderr}})
@@ -153,7 +153,7 @@ def main():
     summary={'baseline_sha':BASELINE,'section':a.section,'comparisons':len(rows),'failures':len(failures),'intentional_deltas':len(deltas),'baseline_manifest_sha256':provenance,'python':sys.version,'binary_sha256':hashlib.sha256(a.binary.read_bytes()).hexdigest() if a.binary else None}
     if a.capture:a.capture.write_text(json.dumps({'summary':summary,'cases':rows,'failures':failures,'intentional_deltas':deltas},ensure_ascii=False,indent=2)+'\n')
     print(json.dumps(summary))
-    for f in failures[:8]: print(json.dumps(f,ensure_ascii=False))
+    for index,f in enumerate(failures): print(json.dumps({'failure_index':index,'op':f['op'],'expected':f['expected'],'actual':f['actual']},ensure_ascii=False))
     return bool(failures)
 
 if __name__=='__main__':sys.exit(main())
