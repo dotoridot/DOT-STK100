@@ -10,6 +10,9 @@ import tempfile
 import unittest
 
 ROOT=Path(__file__).resolve().parents[1]
+
+def copy_package(destination):
+    return shutil.copytree(ROOT,destination,ignore=lambda directory,names:[name for name in names if name in ('.git','__pycache__') or (Path(directory)==ROOT and name in ('target','bin'))])
 sys.path.insert(0,str(ROOT))
 from scripts._native import executable
 from scripts.lint_text import review
@@ -48,7 +51,7 @@ class NativeRegressionTests(unittest.TestCase):
 
     def test_nested_build_directory_names_are_still_checked(self):
         with tempfile.TemporaryDirectory() as tmp:
-            root=Path(tmp)/'package';shutil.copytree(ROOT,root,ignore=shutil.ignore_patterns('.git','target','bin','__pycache__'))
+            root=Path(tmp)/'package';copy_package(root)
             for name in ['target','bin']:
                 directory=root/'docs'/name;directory.mkdir()
                 (directory/'broken.md').write_text('[broken](missing-file.md)')
@@ -62,7 +65,7 @@ class NativeRegressionTests(unittest.TestCase):
 
     def test_native_adapter_is_required_in_native_packages(self):
         with tempfile.TemporaryDirectory() as tmp:
-            root=Path(tmp)/'package';shutil.copytree(ROOT,root,ignore=shutil.ignore_patterns('.git','target','bin','__pycache__'))
+            root=Path(tmp)/'package';copy_package(root)
             (root/'scripts/_native.py').unlink()
             errors,_=validate(root)
             self.assertIn('missing or out-of-root required file: scripts/_native.py',errors)
@@ -77,7 +80,7 @@ class NativeRegressionTests(unittest.TestCase):
 
     def test_missing_native_never_builds_or_downloads(self):
         with tempfile.TemporaryDirectory() as tmp:
-            root=Path(tmp)/'package';shutil.copytree(ROOT,root,ignore=shutil.ignore_patterns('.git','target','bin','__pycache__'))
+            root=Path(tmp)/'package';copy_package(root)
             candidate=root/'candidate.txt';candidate.write_text('3회')
             env=os.environ.copy();env.pop('DOT_STK100_BIN',None)
             run=subprocess.run([sys.executable,str(root/'scripts/lint_text.py'),'--candidate',str(candidate)],capture_output=True,text=True,env=env)
