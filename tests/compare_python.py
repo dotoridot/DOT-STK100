@@ -158,7 +158,7 @@ def main():
     summary={'baseline_sha':BASELINE,'section':a.section,'comparisons':len(rows),'failures':len(failures),'intentional_deltas':len(deltas),'baseline_manifest_sha256':provenance,'python':sys.version,'binary_sha256':hashlib.sha256(a.binary.read_bytes()).hexdigest() if a.binary else None}
     if a.capture:a.capture.write_text(json.dumps({'summary':summary,'cases':rows,'failures':failures,'intentional_deltas':deltas},ensure_ascii=False,indent=2)+'\n')
     print(json.dumps(summary))
-    for index,f in enumerate(failures): print(json.dumps({'failure_index':index,'op':f['op'],'expected':f['expected'],'actual':f['actual']},ensure_ascii=False))
+    for index,f in enumerate(failures): print(json.dumps({'failure_index':index,'op':f['op'],'link_text':f['args'][2] if f['op']=='local_link_errors' else None,'expected':f['expected'],'actual':f['actual']},ensure_ascii=False))
     return bool(failures)
 
 if __name__=='__main__':sys.exit(main())

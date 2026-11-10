@@ -26,7 +26,7 @@ cargo build --release --locked
 
 ## 고정 Python 기준과 비교
 
-기준 SHA는 `71737d3d10885c77824defb35675405fa5657adb`입니다. 과거 코드는 개발 검증용 별도 archive에만 보존하며 현재 제품 경로에서는 실행하지 않습니다. 기준 archive는 tests/python-baseline-manifest.json의76파일 SHA-256과 먼저 대조합니다.
+기준 SHA는 `71737d3d10885c77824defb35675405fa5657adb`이며 동등성 비교의 기준 런타임은 Python 3.15.2입니다. Python 어댑터의 3.11 호환 검사와 기준 비교를 분리합니다. 구버전 urllib는 잘못된 IPv6 bracket 뒤 문자를 허용할 수 있어 같은 소스라도 기준 Python 버전이 다르면 결과가 달라집니다. CI는 두 OS에서 3.11 어댑터 검사를 수행한 뒤 3.15.2로 전환해 기준 비교를 실행합니다. 과거 코드는 개발 검증용 별도 archive에만 보존하며 현재 제품 경로에서는 실행하지 않습니다. 기준 archive는 tests/python-baseline-manifest.json의76파일 SHA-256과 먼저 대조합니다.
 
 ```bash
 # 저장소 밖의 비어 있는 임시 디렉토리를 사용합니다.
