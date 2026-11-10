@@ -4,6 +4,7 @@ use serde_json::{Value, json};
 use std::collections::HashSet;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
+use unicode_normalization::UnicodeNormalization;
 
 pub const REQUIRED: &[&str] = &[
     "references/preferred-expressions.json",
@@ -520,7 +521,7 @@ pub fn resolve_path(path: &Path) -> PathBuf {
     visit(&absolute, 0)
 }
 
-pub fn local_link_errors(root: &Path, document: &Path, text: &str) -> Vec<String> {
+pub fn local_link_errors(root: &Path, document: &Path, text: &str) -> Result<Vec<String>, String> {
     let mut errors = vec![];
     let root = resolve_path(root);
     let name = document.file_name().unwrap_or_default().to_string_lossy();
@@ -534,16 +535,61 @@ pub fn local_link_errors(root: &Path, document: &Path, text: &str) -> Vec<String
             .filter(|c| !matches!(c, '\t' | '\r' | '\n'))
             .collect();
         let cleaned = cleaned.trim_start_matches(|c: char| c <= '\u{20}');
-        if scheme.is_match(cleaned) {
-            continue;
+        let has_scheme = scheme.is_match(cleaned);
+        let tail = if has_scheme {
+            cleaned.split_once(':').map_or(cleaned, |(_, rest)| rest)
+        } else {
+            cleaned
+        };
+        let (netloc, tail) = if let Some(rest) = tail.strip_prefix("//") {
+            let end = rest.find(['/', '?', '#']).unwrap_or(rest.len());
+            (&rest[..end], &rest[end..])
+        } else {
+            ("", tail)
+        };
+        if netloc.contains('[') != netloc.contains(']') {
+            return Err("Invalid IPv6 URL".into());
         }
-        let path_part = cleaned.split(['?', '#']).next().unwrap_or("");
-        if path_part.is_empty() {
-            continue;
+        if netloc.contains('[') {
+            let host_port = netloc.rsplit('@').next().unwrap_or(netloc);
+            let (before, bracket) = host_port.split_once('[').unwrap_or((host_port, ""));
+            if !before.is_empty() {
+                return Err("Invalid IPv6 URL".into());
+            }
+            let (host, port) = bracket.split_once(']').ok_or("Invalid IPv6 URL")?;
+            if !port.is_empty() && !port.starts_with(':') {
+                return Err("Invalid IPv6 URL".into());
+            }
+            if host.starts_with(['v', 'V']) {
+                if !re(r"\A[vV][a-fA-F0-9]+\..+\z").is_match(host) {
+                    return Err("IPvFuture address is invalid".into());
+                }
+            } else {
+                let ip = host.split_once('%').map_or(host, |(ip, _)| ip);
+                if ip.parse::<std::net::Ipv4Addr>().is_ok() {
+                    return Err("An IPv4 address cannot be in brackets".into());
+                }
+                if ip.parse::<std::net::Ipv6Addr>().is_err() {
+                    return Err(format!(
+                        "'{host}' does not appear to be an IPv4 or IPv6 address"
+                    ));
+                }
+            }
         }
-        if let Some(rest) = path_part.strip_prefix("//")
-            && !rest.split('/').next().unwrap_or("").is_empty()
-        {
+        if !netloc.is_ascii() {
+            let n: String = netloc
+                .chars()
+                .filter(|c| !matches!(c, '@' | ':' | '#' | '?'))
+                .collect();
+            let folded: String = n.nfkc().collect();
+            if n != folded && folded.contains(['/', '?', '#', '@', ':']) {
+                return Err(format!(
+                    "netloc '{netloc}' contains invalid characters under NFKC normalization"
+                ));
+            }
+        }
+        let path_part = tail.split(['?', '#']).next().unwrap_or("");
+        if has_scheme || !netloc.is_empty() || path_part.is_empty() {
             continue;
         }
         let decoded = percent_encoding::percent_decode_str(path_part).decode_utf8_lossy();
@@ -559,7 +605,7 @@ pub fn local_link_errors(root: &Path, document: &Path, text: &str) -> Vec<String
             errors.push(format!("{name}: broken local file link: {target}"));
         }
     }
-    errors
+    Ok(errors)
 }
 
 pub fn selected_metadata_errors(skill: &str, cff: &str, version: &str) -> Vec<String> {
@@ -617,7 +663,7 @@ fn collect_files(root: &Path, extension: &str) -> Vec<PathBuf> {
         .follow_links(false)
         .into_iter()
         .filter_entry(|entry| {
-            entry.depth() == 0
+            entry.depth() != 1
                 || ![".git", "target", "bin"]
                     .iter()
                     .any(|name| entry.file_name() == *name)
@@ -638,7 +684,30 @@ fn ids(data: &Value, field: &str) -> HashSet<String> {
 pub fn validate(root: &Path) -> (Vec<String>, Value) {
     let root = resolve_path(root);
     let mut errors = vec![];
-    for relative in REQUIRED {
+    let native_package = root.join("Cargo.toml").is_file()
+        || fs::read_to_string(root.join("scripts/lint_text.py"))
+            .is_ok_and(|s| s.contains("from ._native import"));
+    let native_required: &[&str] = if native_package {
+        &[
+            "scripts/_native.py",
+            "Cargo.toml",
+            "Cargo.lock",
+            "src/main.rs",
+            "src/lib.rs",
+            "src/cli.rs",
+            "src/linter.rs",
+            "src/evaluate.rs",
+            "src/render.rs",
+            "src/package.rs",
+            "src/bin/lint-text.rs",
+            "src/bin/evaluate-linter.rs",
+            "src/bin/render-rules.rs",
+            "src/bin/validate-package.rs",
+        ]
+    } else {
+        &[]
+    };
+    for relative in REQUIRED.iter().chain(native_required.iter()) {
         let path = resolve_path(&root.join(relative));
         if !path.starts_with(&root) || !path.is_file() {
             errors.push(format!("missing or out-of-root required file: {relative}"));
@@ -680,7 +749,7 @@ pub fn validate(root: &Path) -> (Vec<String>, Value) {
                 ));
                 continue;
             }
-            errors.extend(local_link_errors(&root, &path, &read_text(&path)?));
+            errors.extend(local_link_errors(&root, &path, &read_text(&path)?)?);
         }
         if let Some(rule_list) = fields(&rules, "rules") {
             let text = read_text(&root.join("references/DOT-STK100-SPEC.md"))?;
@@ -790,13 +859,17 @@ mod tests {
         fs::create_dir_all(tmp.join("inside")).unwrap();
         fs::write(tmp.join("inside/target.md"), "ok").unwrap();
         symlink(tmp.join("inside"), tmp.join("link")).unwrap();
-        assert!(local_link_errors(&tmp, &tmp.join("doc.md"), "[ok](link/target.md)").is_empty());
         assert!(
-            local_link_errors(&tmp, &tmp.join("doc.md"), "[bad](../outside.md)")[0]
+            local_link_errors(&tmp, &tmp.join("doc.md"), "[ok](link/target.md)")
+                .unwrap()
+                .is_empty()
+        );
+        assert!(
+            local_link_errors(&tmp, &tmp.join("doc.md"), "[bad](../outside.md)").unwrap()[0]
                 .contains("link escapes package")
         );
         assert!(
-            local_link_errors(&tmp, &tmp.join("doc.md"), "[missing](%6dissing.md)")[0]
+            local_link_errors(&tmp, &tmp.join("doc.md"), "[missing](%6dissing.md)").unwrap()[0]
                 .contains("broken local file link")
         );
         fs::remove_dir_all(tmp).unwrap();

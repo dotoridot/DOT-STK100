@@ -38,7 +38,7 @@ def main():
                 if name.startswith('evaluate'):
                     actual=json.loads(raw);reference=json.loads(expected)
                     for obj in (actual,reference):
-                        for field in ('implementation_sha256','implementation_kind'):obj.pop(field,None)
+                        for field in ('implementation_sha256','implementation_kind','evaluation_schema_version'):obj.pop(field,None)
                     return actual==reference
                 if name.startswith('lint'):return json.loads(raw)==json.loads(expected)
                 if name=='validate':

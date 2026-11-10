@@ -46,7 +46,11 @@ fn bridge(root: &Path, op: &str) -> Result<Value, String> {
     Ok(match op {
         "review" => linter::review(
             root,
-            get(0)?.as_str(),
+            match get(0)? {
+                Value::Null => None,
+                Value::String(text) => Some(text.as_str()),
+                _ => return Err("source must be a string or null".into()),
+            },
             string(get(1)?)?,
             a.get(2).filter(|v| !v.is_null()).cloned(),
         )?,
@@ -92,7 +96,7 @@ fn bridge(root: &Path, op: &str) -> Result<Value, String> {
             Path::new(string(get(0)?)?),
             Path::new(string(get(1)?)?),
             string(get(2)?)?
-        )),
+        )?),
         "selected_metadata_errors" => json!(package::selected_metadata_errors(
             string(get(0)?)?,
             string(get(1)?)?,
@@ -103,14 +107,18 @@ fn bridge(root: &Path, op: &str) -> Result<Value, String> {
     })
 }
 
+fn help() {
+    println!(
+        "DOT-STK100 offline report-only tools\nUsage: dot-stk100 <lint|evaluate|render|validate> [options]\n  lint --candidate PATH [--source PATH] [--terms PATH] [--format json]\n  evaluate [--cases PATH | --terminology-examples]\n  render [--check]\n  validate\nAll commands accept --root PATH. Build explicitly with cargo build --release --locked."
+    );
+}
+
 fn execute(args: &[String]) -> Result<i32, String> {
     let Some(command) = args.first().map(String::as_str) else {
         return Err("expected lint, evaluate, render, validate or bridge".into());
     };
-    if args.iter().any(|a| a == "--help" || a == "-h") {
-        println!(
-            "DOT-STK100 offline report-only tools\nUsage: dot-stk100 <lint|evaluate|render|validate> [options]\n  lint --candidate PATH [--source PATH] [--terms PATH] [--format json]\n  evaluate [--cases PATH | --terminology-examples]\n  render [--check]\n  validate\nAll commands accept --root PATH. Build explicitly with cargo build --release --locked."
-        );
+    if command == "--help" || command == "-h" {
+        help();
         return Ok(0);
     }
     let mut package_root = None;
@@ -123,14 +131,28 @@ fn execute(args: &[String]) -> Result<i32, String> {
     let mut operation = None;
     let mut index = 1;
     while index < args.len() {
-        let arg = &args[index];
-        match arg.as_str() {
+        let raw = &args[index];
+        let (arg, assigned) = if raw.starts_with("--") {
+            raw.split_once('=')
+                .map_or((raw.as_str(), None), |(key, value)| (key, Some(value)))
+        } else {
+            (raw.as_str(), None)
+        };
+        match arg {
             "--root" | "--source" | "--candidate" | "--terms" | "--cases" | "--format" => {
-                let option = arg.as_str();
-                index += 1;
-                let val = args
-                    .get(index)
-                    .ok_or_else(|| format!("{option} requires a value"))?;
+                let option = arg;
+                let val = if let Some(value) = assigned {
+                    value
+                } else {
+                    index += 1;
+                    let value = args
+                        .get(index)
+                        .ok_or_else(|| format!("{option} requires a value"))?;
+                    if value.starts_with('-') {
+                        return Err(format!("{option} requires a value"));
+                    }
+                    value.as_str()
+                };
                 match option {
                     "--root" => package_root = Some(PathBuf::from(val)),
                     "--source" if command == "lint" => source = Some(PathBuf::from(val)),
@@ -141,9 +163,17 @@ fn execute(args: &[String]) -> Result<i32, String> {
                     _ => return Err(format!("unsupported option/value: {option} {val}")),
                 }
             }
-            "--terminology-examples" if command == "evaluate" => terminology = true,
-            "--check" if command == "render" => check = true,
-            _ if command == "bridge" && operation.is_none() => operation = Some(arg.as_str()),
+            "--terminology-examples" if command == "evaluate" && assigned.is_none() => {
+                terminology = true
+            }
+            "--check" if command == "render" && assigned.is_none() => check = true,
+            "--help" | "-h" if assigned.is_none() => {
+                help();
+                return Ok(0);
+            }
+            _ if command == "bridge" && operation.is_none() && assigned.is_none() => {
+                operation = Some(arg)
+            }
             _ => return Err(format!("unrecognized argument: {arg}")),
         }
         index += 1;
@@ -236,6 +266,7 @@ fn execute(args: &[String]) -> Result<i32, String> {
                 )
             ));
             result["implementation_kind"] = json!("rust_executable_sha256");
+            result["evaluation_schema_version"] = json!("0.2");
             result["spec_version"] = data(&root.join("rules/rules.json"))?["version"].clone();
             println!(
                 "{}",

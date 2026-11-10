@@ -51,6 +51,7 @@ def inputs(baseline, section):
               '“3회” ‘4회’ "5회"', 'WARN\u001c3회\u0085끝', '```\u2028값 4회\u2029```',
               '전송됩니다. 이것 해당 프로세스', '캐시 cache 초기화를 수행합니다.', 'a_1 FOO fooBar',
               '\r', '\v', '\f', '\x1c', '\x1d', '\x1e', '\x85', '\u2028', '\u2029']
+        for source in [42,[],{},True]:yield 'review',[source,'3회',None]
         for text in edge:
             for src in (None,'',text): yield 'review',[src,text,None]
             yield 'protected',[text]
@@ -146,7 +147,7 @@ def main():
                 for target in ('README.md','../outside.md'):
                     if target.startswith('..'): (base.parent/'outside.md').write_text('outside')
                     link=base/'symlink.md';link.symlink_to(target);compare('validate',[str(base)]);link.unlink()
-                for text in ['[ok](README.md#title)','[bad](../outside.md)','[bad](%2e%2e/outside.md)','[bad](missing.md)','[external](https://example.invalid/)','[bad](dir/../missing.md)']:
+                for text in ['[ok](README.md#title)','[bad](../outside.md)','[bad](%2e%2e/outside.md)','[bad](missing.md)','[external](https://example.invalid/)','[bad](dir/../missing.md)','[empty](//?q)','[bad](http://[)','[bad](http://[127.0.0.1])','[bad](http://[v1])','[bad](http://[::1]suffix)','[bad](http://ｅｘａｍｐｌｅ.com／x)','[ok](http://[::1]/)','[ok](http://[v1.example]/)']:
                     compare('local_link_errors',[str(base),str(base/'doc.md'),text])
     finally:
         oracle.stdin.close();oracle.wait()

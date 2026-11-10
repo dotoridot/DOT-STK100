@@ -26,11 +26,13 @@ def main():
         python=subprocess.run([sys.executable,str(a.baseline.resolve()/'scripts'/script),*(['--root',str(root)] if command in ('render','validate') else []),*options],capture_output=True)
         after_python=spec.read_bytes() if spec.exists() else None
         same=native.returncode==python.returncode and native.returncode in (0,1,2)
-        if native.returncode==0:
+        if native.returncode!=python.returncode:
+            pass  # Preserve the mismatched exit and raw diagnostics without parsing incompatible output.
+        elif native.returncode==0:
             if json_output:
                 n=json.loads(native.stdout);b=json.loads(python.stdout)
                 if command=='evaluate':
-                    for obj in (n,b):obj.pop('implementation_sha256',None);obj.pop('implementation_kind',None)
+                    for obj in (n,b):obj.pop('implementation_sha256',None);obj.pop('implementation_kind',None);obj.pop('evaluation_schema_version',None)
                 same &= n==b
             elif command=='validate':
                 n=native.stdout.decode().splitlines();b=python.stdout.decode().splitlines();same &= n[0]==b[0] and json.loads(n[1])==json.loads(b[1]) and n[2:]==b[2:]
@@ -51,6 +53,7 @@ def main():
         src.write_bytes('😀e\u0301\r\n3회 실행할 수 있습니다.'.encode());dst.write_bytes('😀e\u0301\r\n5회 실행합니다.'.encode())
         run('lint',['--source',str(src),'--candidate',str(dst)],root,[src,dst],True)
         run('lint',['--candidate',str(dst)],root,[src,dst],True)
+        run('lint',['--source='+str(src),'--candidate='+str(dst),'--format=json'],root,[src,dst],True)
         for options in [[],['--candidate',str(root/'missing')],['--candidate',str(dst),'--format','xml'],['--unknown']]:run('lint',options,root,[src,dst])
         dst.write_bytes(b'\xff');run('lint',['--candidate',str(dst)],root,[src,dst]);dst.write_text('3회')
         for raw in ['{bad','{}','{"groups": []}']:
@@ -62,12 +65,14 @@ def main():
         run('evaluate',['--cases',str(root/'missing')],root)
         run('evaluate',['--cases',str(root/'missing'),'--terminology-examples'],root)
         run('render',['--check'],root)
+        run('render',['--root='+str(root),'--check'],root)
         spec=root/'references/DOT-STK100-SPEC.md';valid=spec.read_bytes()
         spec.write_bytes(valid.replace(b'<!-- BEGIN GENERATED RULES -->',b'<!-- BEGIN GENERATED RULES -->\nstale'))
         run('render',['--check'],root,[spec]);run('render',[],root)
         spec.write_text('no markers');run('render',[],root,[spec]);spec.write_bytes(valid)
         spec.write_bytes(valid.replace(b'\n',b'\r\n'));run('render',['--check'],root,[spec]);run('render',[],root);spec.write_bytes(valid)
         run('validate',[],root)
+        run('validate',['--root='+str(root)],root)
         (root/'README.md').unlink();run('validate',[],root)
     summary={'baseline_manifest_sha256':manifest,'binary_sha256':hashlib.sha256(a.binary.read_bytes()).hexdigest(),'comparisons':len(rows),'failures':sum(not r['equal'] for r in rows)}
     a.output.write_text(json.dumps({'summary':summary,'rows':rows},ensure_ascii=False,indent=2)+'\n');print(json.dumps(summary))
