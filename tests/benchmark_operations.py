@@ -53,9 +53,18 @@ def main():
         scenarios=[]
         for name,command,options in [('evaluate-seed','evaluate',[]),('evaluate-terms','evaluate',['--terminology-examples']),('lint-single','lint',['--source',str(directory/'0-source.txt'),'--candidate',str(directory/'0-candidate.txt')]),('render-check','render',['--check']),('validate','validate',[])]:
             scenarios.append((name,{'before':[str(before_bin),command,'--root',str(before_root),*options],'after':[str(after_bin),command,'--root',str(before_root),*options]}))
-        def cmd(root,binary,mode):return [sys.executable,str(Path(__file__).resolve()),'--worker','--root',str(root),'--binary',str(binary),'--cases',str(cases_file),'--mode',mode]
+        def cmd(root,binary,mode,path=cases_file):return [sys.executable,str(Path(__file__).resolve()),'--worker','--root',str(root),'--binary',str(binary),'--cases',str(path),'--mode',mode]
         scenarios.append(('56-document-cli',{'before-repeat':cmd(before_root,before_bin,'cli-repeat'),'after-repeat':cmd(ROOT,after_bin,'cli-repeat'),'after-batch':cmd(ROOT,after_bin,'cli-batch')}))
         scenarios.append(('56-document-python-api',{'before-repeat':cmd(before_root,before_bin,'api-repeat'),'after-repeat':cmd(ROOT,after_bin,'api-repeat'),'after-batch':cmd(ROOT,after_bin,'api-batch')}))
+        document_paths=['README.md','docs/LINTER.md','docs/IMPLEMENTATION-PLAN.md','docs/RUST-MIGRATION.md','references/DOT-STK100-SPEC.md','references/profiles/lite.md','references/profiles/core.md','references/profiles/audit.md']
+        public=tmp/'public-documents';(public/'documents').mkdir(parents=True)
+        public_cases=[]
+        for i,path in enumerate(document_paths):
+            text=(before_root/path).read_text();public_cases.append({'source':text,'candidate':text})
+            (public/'documents'/f'{i}-source.txt').write_text(text);(public/'documents'/f'{i}-candidate.txt').write_text(text)
+        public_input=public/'cases.jsonl';public_input.write_text('\n'.join(json.dumps(c,ensure_ascii=False) for c in public_cases)+'\n')
+        public_input_sha256=hashlib.sha256(public_input.read_bytes()).hexdigest()
+        scenarios.append(('8-package-documents-cli',{'before-repeat':cmd(before_root,before_bin,'cli-repeat',public_input),'after-repeat':cmd(ROOT,after_bin,'cli-repeat',public_input),'after-batch':cmd(ROOT,after_bin,'cli-batch',public_input)}))
         for name,commands in scenarios:
             reference=None;durations={k:[] for k in commands};hashes={k:[] for k in commands};mismatches=[]
             def collect(key,run):
@@ -79,7 +88,7 @@ def main():
                     if value!=reference:mismatches.append({'implementation':key,'run':i+1,'stdout':raw.decode(errors='replace')})
             rows.append({'scenario':name,'median_ms':{k:statistics.median(v) for k,v in durations.items()},'durations_ms':durations,'output_sha256_by_run':hashes,'all_equivalent':not mismatches,'mismatches':mismatches})
             print(name,rows[-1]['median_ms'],'equal',not mismatches,flush=True)
-    result={'before_sha':'7fcfbb7a17049b852ffab89ac672eb2dd9ec2407','before_binary_sha256':hashlib.sha256(before_bin.read_bytes()).hexdigest(),'after_binary_sha256':hashlib.sha256(after_bin.read_bytes()).hexdigest(),'python':sys.version,'platform':platform.platform(),'machine':platform.machine(),'runs':a.runs,'warmup_runs':1,'seed_cases':56,'repeat_worker_overhead':'both repeat and batch include one Python controller startup; API repeat uses one Python interpreter with one native subprocess per document','rows':rows}
+    result={'before_sha':'7fcfbb7a17049b852ffab89ac672eb2dd9ec2407','before_binary_sha256':hashlib.sha256(before_bin.read_bytes()).hexdigest(),'after_binary_sha256':hashlib.sha256(after_bin.read_bytes()).hexdigest(),'python':sys.version,'platform':platform.platform(),'machine':platform.machine(),'runs':a.runs,'warmup_runs':1,'seed_cases':56,'public_document_paths':document_paths,'public_input_sha256':public_input_sha256,'repeat_worker_overhead':'both repeat and batch include one Python controller startup; API repeat uses one Python interpreter with one native subprocess per document','rows':rows}
     a.output.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');return any(not row['all_equivalent'] for row in rows)
 
 if __name__=='__main__':sys.exit(main())
