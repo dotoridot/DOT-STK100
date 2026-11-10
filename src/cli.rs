@@ -1,4 +1,4 @@
-use crate::{evaluate, linter};
+use crate::{evaluate, linter, render};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
@@ -25,6 +25,10 @@ fn root() -> Result<PathBuf, String> {
         .map(Path::to_path_buf)
         .ok_or_else(|| "package root not found beside executable; pass --root".into())
 }
+fn normalized(text: String) -> String {
+    text.replace("\r\n", "\n").replace('\r', "\n")
+}
+
 fn bridge(root: &Path, op: &str) -> Result<Value, String> {
     let mut input = String::new();
     io::stdin()
@@ -63,17 +67,20 @@ fn bridge(root: &Path, op: &str) -> Result<Value, String> {
             linter::validate_term_config(get(0)?)?;
             Value::Null
         }
+        "cell" => json!(render::cell(string(get(0)?)?)),
+        "render_table" => json!(render::render_table(get(0)?)?),
+        "render_document" => json!(render::render_document(string(get(0)?)?, get(1)?)?),
         _ => return Err(format!("unknown bridge operation: {op}")),
     })
 }
 
 fn execute(args: &[String]) -> Result<i32, String> {
     let Some(command) = args.first().map(String::as_str) else {
-        return Err("expected lint, evaluate or bridge".into());
+        return Err("expected lint, evaluate, render or bridge".into());
     };
     if args.iter().any(|a| a == "--help" || a == "-h") {
         println!(
-            "DOT-STK100 offline report-only tools\nUsage: dot-stk100 <lint|evaluate> [options]\n  lint --candidate PATH [--source PATH] [--terms PATH] [--format json]\n  evaluate [--cases PATH | --terminology-examples]\nAll commands accept --root PATH. Build explicitly with cargo build --release --locked."
+            "DOT-STK100 offline report-only tools\nUsage: dot-stk100 <lint|evaluate|render> [options]\n  lint --candidate PATH [--source PATH] [--terms PATH] [--format json]\n  evaluate [--cases PATH | --terminology-examples]\n  render [--check]\nAll commands accept --root PATH. Build explicitly with cargo build --release --locked."
         );
         return Ok(0);
     }
@@ -83,6 +90,7 @@ fn execute(args: &[String]) -> Result<i32, String> {
     let mut terms = None;
     let mut cases = None;
     let mut terminology = false;
+    let mut check = false;
     let mut operation = None;
     let mut index = 1;
     while index < args.len() {
@@ -105,6 +113,7 @@ fn execute(args: &[String]) -> Result<i32, String> {
                 }
             }
             "--terminology-examples" if command == "evaluate" => terminology = true,
+            "--check" if command == "render" => check = true,
             _ if command == "bridge" && operation.is_none() => operation = Some(arg.as_str()),
             _ => return Err(format!("unrecognized argument: {arg}")),
         }
@@ -203,6 +212,29 @@ fn execute(args: &[String]) -> Result<i32, String> {
                 "{}",
                 serde_json::to_string_pretty(&result).map_err(|e| e.to_string())?
             );
+        }
+        "render" => {
+            let rules = data(&root.join("rules/rules.json"))?;
+            let list = rules["rules"]
+                .as_array()
+                .filter(|v| !v.is_empty())
+                .ok_or("rules must be a nonempty list")?;
+            let path = root.join("references/DOT-STK100-SPEC.md");
+            let original = normalized(read(&path)?);
+            let rendered = render::render_document(&original, &rules["rules"])?;
+            if check {
+                if rendered != original {
+                    eprintln!("FAIL: generated rule table is stale; run scripts/render_rules.py");
+                    return Ok(1);
+                }
+                println!(
+                    "PASS: generated rule table matches {} rules (structure only)",
+                    list.len()
+                );
+            } else {
+                fs::write(path, rendered).map_err(|e| e.to_string())?;
+                println!("Rendered {} rules", list.len());
+            }
         }
         "bridge" => println!(
             "{}",
