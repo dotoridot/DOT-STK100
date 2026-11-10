@@ -17,16 +17,21 @@
 
 ## 정본과 변경
 
-규칙 정본은 `rules/rules.json`이다. 규칙 표는 `python scripts/render_rules.py`로 갱신한다. ID를 재사용하지 않는다. SKILL.md·용어집·사례·평가 계획이 상충하는지 함께 검토한다.
+규칙 정본은 `rules/rules.json`이다. 규칙 표는 `./target/release/dot-stk100 render`로 갱신한다. ID를 재사용하지 않는다. SKILL.md·용어집·사례·평가 계획이 상충하는지 함께 검토한다.
 
-규칙을 바꾸면 좋은 예·나쁜 예·모호성·예외와 관련 테스트를 추가한다. 보고 전용 문장 linter는 scripts/lint_text.py다. 패키지 검사기와 의미 검토 엔진을 구분한다. 독립 사람 검토와 호스트 동작 시험은 별도로 기록한다.
+규칙을 바꾸면 좋은 예·나쁜 예·모호성·예외와 관련 테스트를 추가한다. 보고 전용 문장 linter는 `dot-stk100 lint`이며 기존 scripts/lint_text.py는 native 호출 어댑터다. 패키지 검사기와 의미 검토 엔진을 구분한다. 독립 사람 검토와 호스트 동작 시험은 별도로 기록한다.
 
 ## 제출 전 실행
 
 ```bash
-python scripts/render_rules.py --check
-python scripts/validate_package.py
-python -m unittest discover -s tests -v
+cargo build --release --locked
+./target/release/dot-stk100 render --check
+./target/release/dot-stk100 validate
+python3 -m unittest discover -s tests -v
+./target/release/dot-stk100 evaluate
+cargo fmt --all -- --check
+cargo clippy --all-targets --locked -- -D warnings
+cargo test --locked
 ```
 
 검사 명령, 실제 종료 코드, 남은 실패와 미실행 검토를 기록한다. 구조 테스트 통과를 가독성·의미 보존 검증으로 쓰지 않는다.
@@ -34,3 +39,5 @@ python -m unittest discover -s tests -v
 ## 최종 보고
 
 변경한 파일, 실행한 검사, 발견한 문제, 미완료 작업, 원격 변경 여부, 승인 대기 항목을 분리해 보고한다. 결과를 뒷받침할 로그가 없으면 실행 완료라고 쓰지 않는다.
+
+Rust 전환 동등성 검사는 [전환 안내](docs/RUST-MIGRATION.md)의 고정 Python 기준 archive와 함께 실행한다. 일반 실행 중 자동 빌드나 다운로드를 추가하지 않는다.

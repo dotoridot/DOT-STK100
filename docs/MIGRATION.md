@@ -39,3 +39,13 @@ v0.1은 기본 개념을 정리한 47개 규칙의 초안이었다. v0.2는 이�
 ## 미출시 권장 표현 사전과 Linter 출력 0.2
 
 의미 구분 사전의 구조 0.2는 유지하고, 별도 preferred-expressions.json 구조 0.1을 추가했다. K07의 표현 선택을 구체화하며 규칙 수 32개와 배포 버전 0.0.2는 유지한다. Linter 도구 버전은 0.2.0, 출력 schema_version은 0.2로 바뀐다. expressions 설정 해시가 추가되므로 출력 스키마를 엄격하게 검증하는 소비자는 새 스키마를 사용해야 한다. 기존 check 종류는 유지하며 표현 후보를 terminology/YSK-K07/EXPR ID로 구분한다. 기본 seed와 용어 예시 any-warning 집계에는 문체 후보가 포함될 수 있어 과거 집계와 구분한다.
+
+## Python 스크립트에서 Rust 실행 파일로
+
+규칙 배포 버전 0.0.2와 Linter 출력 schema_version0.2, tool_version0.2.0은 유지한다. CLI 기본 경로는 `dot-stk100 lint/evaluate/render/validate`다. 기존 Python 경로와 확인한 import API는 native 어댑터로 남긴다. 각 호스트에서 release 빌드를 명시적으로 만들며 일반 실행 중 빌드나 다운로드는 없다.
+
+평가기 CLI에는 `evaluation_schema_version: "0.2"`와 `implementation_kind: "rust_executable_sha256"`를 추가한다. `implementation_sha256`은 현재 실행 중인 Rust 바이너리의 bytes 해시이며 과거 Python 소스 해시와 같다고 비교하지 않는다. Python `evaluate(cases)` import API의 집계 결과에는 CLI 전용 식별 필드를 추가하지 않는다.
+
+잘못된 `expected_review`가 배열이나 객체인 두 API 입력은 Python의 unhashable TypeError 대신 `invalid expected_review` 진단을 반환한다. 여전히 유효한 라벨로 허용하지 않으며 비교 도구에 명시적인 차이로 기록한다. Rust parser/OS 오류 문구는 Python과 다를 수 있지만 실패 종료 코드, 빈 stdout, stderr 진단과 입력 bytes 보존을 검사한다.
+
+패키지 재귀 검사에서는 루트의 `.git`, `target`, `bin` 디렉토리를 제외한다. 소스, 규칙과 문서 검사 범위는 유지한다. 비표준 JSON의 NaN/Infinity와 임의 Python 정규식 전체 지원을 보장하지 않는다. 자세한 절차는 [Rust 전환 안내](RUST-MIGRATION.md)를 따른다.

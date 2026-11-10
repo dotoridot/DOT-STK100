@@ -1,0 +1,17 @@
+[package]
+name = "dot-stk100"
+version = "0.2.0"
+edition = "2024"
+license = "MIT"
+description = "Offline report-only Korean technical writing checks"
+default-run = "dot-stk100"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order", "arbitrary_precision"] }
+fancy-regex = "0.16"
+regex = "1"
+sha2 = "0.10"
+walkdir = "2"
+percent-encoding = "2"
+unicode-normalization = "0.1"

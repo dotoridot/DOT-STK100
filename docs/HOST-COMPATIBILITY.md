@@ -32,3 +32,7 @@ SKILL 진입 파일은 공통 보존 원칙과 프로필/모드 선택을 담당
 실제 버전 조회: codex-cli 0.167.0, Claude Code 2.1.319. 두 명령 모두 --version만 실행했다. 임시 레이아웃 기록: [host-layout-output.txt](../reports/pre-rebrand/host-layout-output.txt).
 
 위 임시 레이아웃 기록은 이름 변경 전 작업의 기록이다. 현재 이름의 실제 호스트 호출 시험은 수행하지 않았다.
+
+## Rust 실행 파일의 설치 경계
+
+Rust 전환 후에는 [빌드 안내](RUST-MIGRATION.md)에 따라 각 실행 머신에서 release 실행 파일을 만들어 `bin/dot-stk100`에 둡니다. 호스트 모델을 호출하는 것과 설치 파일 검사, native CLI 실행을 별도로 기록합니다. 위 표의 과거 미실행 항목을 Rust 코드 검사만으로 완료 처리하지 않습니다.

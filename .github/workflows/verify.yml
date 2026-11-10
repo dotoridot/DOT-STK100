@@ -1,0 +1,43 @@
+name: Verify
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo test --locked
+      - run: cargo build --release --locked
+      - run: ./target/release/dot-stk100 render --check
+      - run: ./target/release/dot-stk100 validate
+      - name: Python 3.11 adapter compatibility
+        run: python3 -m unittest discover -s tests -v
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.15.2'
+      - name: Canonical Python baseline runtime
+        run: |
+          python3 --version
+          python3 -m unittest discover -s tests -v
+      - name: Compare immutable Python baseline
+        shell: bash
+        run: |
+          baseline_dir=$(mktemp -d)
+          git archive 71737d3d10885c77824defb35675405fa5657adb | tar -x -C "$baseline_dir"
+          python3 tests/compare_python.py --baseline "$baseline_dir" --binary target/release/dot-stk100 --capture "$RUNNER_TEMP/api-results.json"
+          python3 tests/compare_cli.py --baseline "$baseline_dir" --binary target/release/dot-stk100 --output "$RUNNER_TEMP/cli-results.json"

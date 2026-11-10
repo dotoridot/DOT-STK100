@@ -13,10 +13,16 @@
 ## 로컬 검사
 
 ```bash
-python3 scripts/render_rules.py --check
-python3 scripts/validate_package.py
+cargo build --release --locked
+./target/release/dot-stk100 render --check
+./target/release/dot-stk100 validate
 python3 -m unittest discover -s tests -v
-python3 scripts/evaluate_linter.py
+./target/release/dot-stk100 evaluate
+cargo fmt --all -- --check
+cargo clippy --all-targets --locked -- -D warnings
+cargo test --locked
 ```
 
 보고 전용 Linter의 경고는 후보로 유지한다. 규칙 변경에는 보존 의도 예, 잘못된 교정, 모호성, 허용 예외를 함께 제출한다. 회귀 데이터는 합성으로 작성하고 label_status를 사람 합의 없이 변경하지 않는다. 저작자 기본 표기는 dotoridot이며 실제 기여자는 합의한 범위에서 별도로 기록한다.
+
+Python 기준과 native의 비교 절차는 [Rust 전환 안내](docs/RUST-MIGRATION.md)를 따른다.
