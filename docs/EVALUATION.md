@@ -99,7 +99,7 @@ TP/FP/TN/FN, precision, recall, FPR/미탐률과 사례 ID를 보고한다. 분�
 
 ## 11. 용어 구분 개선의 독립 효과 평가
 
-[용어집](../references/terminology.json)의 48개 예시는 16개 용어 계열의 공개 개발 자료다. 각 계열의 올바른 편집, 의미 변경 반례와 문맥 부족 예시를 함께 검토한다. `python3 scripts/evaluate_linter.py --terminology-examples`는 Linter의 경고 발생만 집계하며, 스킬이 만들어 낸 글의 의미 보존 효과를 측정하지 않는다.
+[용어집](../references/terminology.json)의 48개 예시는 16개 용어 계열의 공개 개발 자료다. 각 계열의 올바른 편집, 의미 변경 반례와 문맥 부족 예시를 함께 검토한다. `./target/release/dot-stk100 evaluate --terminology-examples`는 Linter의 경고 발생만 집계하며, 스킬이 만들어 낸 글의 의미 보존 효과를 측정하지 않는다.
 
 효과 실험은 다음 조건을 갖춘 뒤 실행한다.
 

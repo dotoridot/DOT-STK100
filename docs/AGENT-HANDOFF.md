@@ -6,7 +6,7 @@
 
 ## 먼저 확인
 
-README.md, AGENTS.md, reports/AUDIT.md, reports/VALIDATION.md와 docs/IMPLEMENTATION-PLAN.md를 읽는다. rules/rules.json이 규칙 정본이며 표는 scripts/render_rules.py로 생성한다. 입력 ZIP은 원본으로 유지했다. 제공 폴더가 ZIP 35개 파일과 일치함을 확인한 뒤 기존 해제본을 수정했다. 로컬 검토 폴더는 git init 하지 않았다. 원격 dotoridot/DOT-STK100은 생성해 공개 초안을 반영했다.
+README.md, AGENTS.md, reports/AUDIT.md, reports/VALIDATION.md와 docs/IMPLEMENTATION-PLAN.md를 읽는다. rules/rules.json이 규칙 정본이며 표는 `dot-stk100 render`로 생성한다(기존 Python 경로는 호환 어댑터). 입력 ZIP은 원본으로 유지했다. 제공 폴더가 ZIP 35개 파일과 일치함을 확인한 뒤 기존 해제본을 수정했다. 로컬 검토 폴더는 git init 하지 않았다. 원격 dotoridot/DOT-STK100은 생성해 공개 초안을 반영했다.
 
 ## 이번 로컬 구현
 
@@ -22,10 +22,13 @@ README.md, AGENTS.md, reports/AUDIT.md, reports/VALIDATION.md와 docs/IMPLEMENTA
 ## 제출 전 검사
 
 ```bash
-python3 scripts/render_rules.py --check
-python3 scripts/validate_package.py
+cargo build --release --locked
+./target/release/dot-stk100 render --check
+./target/release/dot-stk100 validate
 python3 -m unittest discover -s tests -v
-python3 scripts/evaluate_linter.py
+./target/release/dot-stk100 evaluate
 ```
 
 명령과 실제 종료 코드를 기록한다. 구조·회귀·AI 라벨 경고 집계·사람 검토를 분리한다. 저장소 생성, Push, PR, 태그, 릴리스, 공개 상태 변경은 별도 승인 전 수행하지 않는다.
+
+Rust 전환은 [전환 안내](RUST-MIGRATION.md)와 [검증 기록](../reports/RUST-MIGRATION.md)을 따른다. native 빌드, Python 어댑터, 실제 호스트 모델 실행을 별도로 보고한다.

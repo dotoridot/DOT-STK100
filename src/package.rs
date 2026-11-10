@@ -685,8 +685,9 @@ pub fn validate(root: &Path) -> (Vec<String>, Value) {
     let root = resolve_path(root);
     let mut errors = vec![];
     let native_package = root.join("Cargo.toml").is_file()
-        || fs::read_to_string(root.join("scripts/lint_text.py"))
-            .is_ok_and(|s| s.contains("from ._native import"));
+        || (resolve_path(&root.join("scripts/lint_text.py")).starts_with(&root)
+            && fs::read_to_string(root.join("scripts/lint_text.py"))
+                .is_ok_and(|s| s.contains("from ._native import")));
     let native_required: &[&str] = if native_package {
         &[
             "scripts/_native.py",

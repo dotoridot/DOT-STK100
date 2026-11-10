@@ -26,7 +26,7 @@ MVP는 로컬·보고 전용이다. 자동 교정, 저장, 네트워크 전송, 
 ## 구현된 CLI 계약
 
 ```bash
-python3 scripts/lint_text.py --source examples/source.md --candidate examples/candidate.md --format json
+./target/release/dot-stk100 lint --source examples/source.md --candidate examples/candidate.md --format json
 ```
 
 선택적 source와 terms 설정, JSON 출력, 종료 코드 0/2를 제공한다. schema_version, tool_version, spec_version, input_hashes, config_hashes, checks_run, checks_skipped, findings를 기록한다. 모든 finding은 WARN/candidate이며 의미 verdict나 확정 위반 게이트를 생성하지 않는다.

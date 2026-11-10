@@ -205,22 +205,26 @@ $dot-stk100 Audit review: 아래 원문과 수정문의 의미 변경 위험을 
 ## 보고 전용 Linter
 
 ```bash
-python3 scripts/lint_text.py --source examples/source.md --candidate examples/candidate.md --format json
-python3 scripts/evaluate_linter.py --terminology-examples
+cargo build --release --locked
+./target/release/dot-stk100 lint --source examples/source.md --candidate examples/candidate.md --format json
+./target/release/dot-stk100 evaluate --terminology-examples
 ```
 
 결과는 수정 없이 stdout JSON으로 보고합니다. 모든 경고는 후보입니다. 종료 코드 0이나 경고 없음은 의미 보존 합격이 아닙니다. [검출 범위, 위치 규약, 오탐과 미탐](docs/LINTER.md)을 확인하세요.
 
 ## 로컬 구조 검사
 
-Python 3.11 이상을 이 패키지의 지원 목표로 정했습니다. 런타임 외 추가 의존성·네트워크 연결은 필요하지 않습니다.
+검사 도구는 Rust native 실행 파일을 사용합니다. 각 실행 머신에서 `Cargo.lock`을 사용해 release 빌드를 한 번 만듭니다. 의존성 다운로드는 명시적인 빌드 단계에서만 일어나며, 일반 실행 중에는 자동 빌드, 다운로드와 네트워크 연결을 하지 않습니다. 개발 검사와 기존 호출 어댑터는 Python 3.11 이상을 사용합니다.
 
 ```bash
-python scripts/render_rules.py --check
-python scripts/validate_package.py
-python -m unittest discover -s tests -v
-python scripts/evaluate_linter.py
+cargo build --release --locked
+./target/release/dot-stk100 render --check
+./target/release/dot-stk100 validate
+python3 -m unittest discover -s tests -v
+./target/release/dot-stk100 evaluate
 ```
+
+기존 `python3 scripts/*.py` CLI와 import API는 같은 native 구현을 호출하는 어댑터로 남아 있습니다. 어댑터는 `bin/dot-stk100`, 개발용 `target/release/dot-stk100` 순으로 실행 파일을 찾습니다. 빌드와 설치, 출력 계약 변경은 [Rust 전환 안내](docs/RUST-MIGRATION.md)를 참고하세요.
 
 이 명령은 파일 구조·참조·테스트 자료 형식을 검사합니다. 문장의 의미와 사실을 검증하는 명령이 아닙니다. 실행 기록은 [검사 보고서](reports/VALIDATION.md)에 있습니다.
 

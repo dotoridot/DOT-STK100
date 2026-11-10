@@ -1,12 +1,12 @@
 # 로컬 보고 전용 Linter
 
-Python 표준 라이브러리만 사용하는 휴리스틱 검사기다. 자동 수정, 파일 저장, 네트워크 요청, 모델 호출과 의미 적합 판정을 하지 않는다. stdout에 JSON을 쓰고 오류는 stderr에 기록한다. JSON에는 입력 구절이 포함되므로 민감한 문서의 결과도 로컬에 보관한다.
+Rust로 구현한 로컬 휴리스틱 검사기다. 실행 파일은 명시적으로 release 빌드하며 [빌드와 호환 경로](RUST-MIGRATION.md)를 따른다. 자동 수정, 파일 저장, 네트워크 요청, 모델 호출과 의미 적합 판정을 하지 않는다. stdout에 JSON을 쓰고 오류는 stderr에 기록한다. JSON에는 입력 구절이 포함되므로 민감한 문서의 결과도 로컬에 보관한다.
 
 ```bash
-python3 scripts/lint_text.py --source examples/source.md --candidate examples/candidate.md --format json
-python3 scripts/lint_text.py --candidate examples/candidate.md
-python3 scripts/evaluate_linter.py
-python3 scripts/evaluate_linter.py --terminology-examples
+./target/release/dot-stk100 lint --source examples/source.md --candidate examples/candidate.md --format json
+./target/release/dot-stk100 lint --candidate examples/candidate.md
+./target/release/dot-stk100 evaluate
+./target/release/dot-stk100 evaluate --terminology-examples
 ```
 
 원문이 없으면 주체/지시 대상과 표기 혼용 후보만 검사하고 나머지는 checks_skipped에 기록한다. 종료 코드 0은 요청한 검사 실행 완료, 2는 입력/설정/실행 오류다. 위반 게이트와 종료 코드 1은 구현하지 않았다. 경고 유무로 의미 보존을 판정하지 않는다.
