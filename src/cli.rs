@@ -1,4 +1,4 @@
-use crate::{evaluate, linter, render};
+use crate::{evaluate, linter, package, render};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
@@ -16,6 +16,13 @@ fn data(path: &Path) -> Result<Value, String> {
 }
 fn string(v: &Value) -> Result<&str, String> {
     v.as_str().ok_or_else(|| "expected a string".into())
+}
+fn ids(v: &Value) -> Result<HashSet<String>, String> {
+    v.as_array()
+        .ok_or("expected a string list")?
+        .iter()
+        .map(|v| Ok(string(v)?.to_owned()))
+        .collect()
 }
 fn root() -> Result<PathBuf, String> {
     let exe = std::env::current_exe().map_err(|e| e.to_string())?;
@@ -70,17 +77,39 @@ fn bridge(root: &Path, op: &str) -> Result<Value, String> {
         "cell" => json!(render::cell(string(get(0)?)?)),
         "render_table" => json!(render::render_table(get(0)?)?),
         "render_document" => json!(render::render_document(string(get(0)?)?, get(1)?)?),
+        "validate" => {
+            let (errors, counts) = package::validate(Path::new(string(get(0)?)?));
+            json!([errors, counts])
+        }
+        "validate_sources" => json!(package::validate_sources(get(0)?)),
+        "validate_rules" => json!(package::validate_rules(get(0)?, &ids(get(1)?)?)),
+        "validate_cases" => json!(package::validate_cases(get(0)?, &ids(get(1)?)?)),
+        "validate_examples" => json!(package::validate_examples(get(0)?, string(get(1)?)?)),
+        "validate_terminology" => json!(package::validate_terminology(get(0)?, &ids(get(1)?)?)),
+        "validate_expressions" => json!(package::validate_expressions(get(0)?, &ids(get(1)?)?)),
+        "without_fences" => json!(package::without_fences(string(get(0)?)?)),
+        "local_link_errors" => json!(package::local_link_errors(
+            Path::new(string(get(0)?)?),
+            Path::new(string(get(1)?)?),
+            string(get(2)?)?
+        )),
+        "selected_metadata_errors" => json!(package::selected_metadata_errors(
+            string(get(0)?)?,
+            string(get(1)?)?,
+            string(get(2)?)?
+        )),
+        "nonempty" => json!(package::nonempty(get(0)?)),
         _ => return Err(format!("unknown bridge operation: {op}")),
     })
 }
 
 fn execute(args: &[String]) -> Result<i32, String> {
     let Some(command) = args.first().map(String::as_str) else {
-        return Err("expected lint, evaluate, render or bridge".into());
+        return Err("expected lint, evaluate, render, validate or bridge".into());
     };
     if args.iter().any(|a| a == "--help" || a == "-h") {
         println!(
-            "DOT-STK100 offline report-only tools\nUsage: dot-stk100 <lint|evaluate|render> [options]\n  lint --candidate PATH [--source PATH] [--terms PATH] [--format json]\n  evaluate [--cases PATH | --terminology-examples]\n  render [--check]\nAll commands accept --root PATH. Build explicitly with cargo build --release --locked."
+            "DOT-STK100 offline report-only tools\nUsage: dot-stk100 <lint|evaluate|render|validate> [options]\n  lint --candidate PATH [--source PATH] [--terms PATH] [--format json]\n  evaluate [--cases PATH | --terminology-examples]\n  render [--check]\n  validate\nAll commands accept --root PATH. Build explicitly with cargo build --release --locked."
         );
         return Ok(0);
     }
@@ -235,6 +264,26 @@ fn execute(args: &[String]) -> Result<i32, String> {
                 fs::write(path, rendered).map_err(|e| e.to_string())?;
                 println!("Rendered {} rules", list.len());
             }
+        }
+        "validate" => {
+            let (errors, counts) = package::validate(&root);
+            if !errors.is_empty() {
+                for error in errors {
+                    eprintln!("FAIL: {error}");
+                }
+                return Ok(1);
+            }
+            println!("PASS: package structure and references");
+            // Python CLI prints sorted count keys.
+            let sorted: std::collections::BTreeMap<_, _> =
+                counts.as_object().ok_or("invalid counts")?.iter().collect();
+            println!(
+                "{}",
+                serde_json::to_string(&sorted).map_err(|e| e.to_string())?
+            );
+            println!(
+                "NOT CHECKED: semantic labels, facts, readability, host compatibility or real-world effectiveness"
+            );
         }
         "bridge" => println!(
             "{}",

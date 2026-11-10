@@ -1,25 +1,14 @@
 #!/usr/bin/env python3
-"""Offline package checks; NOT a prose linter, fact checker or semantic validator.
-
-Only the package's simple inline Markdown links and selected front-matter fields
-are checked. This is not a full Markdown/YAML/CFF/schema compliance parser.
-"""
-from __future__ import annotations
-
-import argparse
-import json
-import re
-import sys
+"""Compatibility API for native structure checks, not semantic validation."""
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
-
+import re
 try:
-    from .render_rules import render_document
+    from ._native import call, main as native_main
 except ImportError:
-    from render_rules import render_document
+    from _native import call, main as native_main
 
 RULE_ID = re.compile(r"^YSK-[MKEPQ]\d{2}$")
-LABELS = {"compatible", "meaning_changed", "needs_context"}
+LABELS = {'compatible', 'meaning_changed', 'needs_context'}
 REQUIRED = (
     "references/preferred-expressions.json", "references/EXPRESSIONS.md",
     "README.md", "SKILL.md", "AGENTS.md", "AUTHORS.md", "CITATION.cff", "LICENSE.md",
@@ -39,352 +28,53 @@ REQUIRED = (
     "docs/HOST-COMPATIBILITY.md", "reports/AUDIT.md",
 )
 
-
-def nonempty(value: object) -> bool:
-    return isinstance(value, str) and bool(value.strip())
-
-
-def validate_sources(data: object) -> list[str]:
-    errors: list[str] = []
-    if not isinstance(data, dict) or not isinstance(data.get("sources"), list):
-        return ["sources: expected an object with a sources list"]
-    seen: set[str] = set()
-    for index, source in enumerate(data["sources"], 1):
-        loc = f"sources[{index}]"
-        if not isinstance(source, dict):
-            errors.append(f"{loc}: expected an object")
-            continue
-        sid = source.get("id")
-        if not nonempty(sid):
-            errors.append(f"{loc}: missing id")
-        elif sid in seen:
-            errors.append(f"{loc}: duplicate source id {sid}")
-        else:
-            seen.add(sid)
-        for key in ("title", "authors", "published", "url", "reviewed_scope", "limits",
-                    "verification_status", "confirmed_findings", "applicable_principles",
-                    "non_applicable_principles"):
-            if not nonempty(source.get(key)):
-                errors.append(f"{loc}: missing {key}")
-        if not source.get("accessed") and source.get("verification_status") != "inherited_not_reverified":
-            errors.append(f"{loc}: missing accessed for checked source")
-        if not isinstance(source.get("hypotheses"), list) or not source["hypotheses"] or any(not nonempty(x) for x in source["hypotheses"]):
-            errors.append(f"{loc}: missing hypotheses")
-        if isinstance(source.get("url"), str) and not source["url"].startswith("https://"):
-            errors.append(f"{loc}: expected an HTTPS source URL")
-    return errors
+def nonempty(value):
+    return call('nonempty', value)
 
 
-def validate_rules(data: object, source_ids: set[str]) -> list[str]:
-    if not isinstance(data, dict) or not isinstance(data.get("rules"), list):
-        return ["rules: expected an object with a rules list"]
-    errors: list[str] = []
-    if not data["rules"]:
-        errors.append("rules: list is empty")
-    if not nonempty(data.get("version")):
-        errors.append("rules: missing version")
-    seen: set[str] = set()
-    for index, rule in enumerate(data["rules"], 1):
-        loc = f"rules[{index}]"
-        if not isinstance(rule, dict):
-            errors.append(f"{loc}: expected an object")
-            continue
-        rid = rule.get("id")
-        if not isinstance(rid, str) or not RULE_ID.fullmatch(rid):
-            errors.append(f"{loc}: invalid rule id")
-        elif rid in seen:
-            errors.append(f"{loc}: duplicate rule id {rid}")
-        else:
-            seen.add(rid)
-        for key in ("section", "title", "requirement", "exception", "verification", "evidence_status"):
-            if not nonempty(rule.get(key)):
-                errors.append(f"{loc}: missing {key}")
-        if rule.get("level") not in ("MUST", "SHOULD"):
-            errors.append(f"{loc}: invalid rule level")
-        refs = rule.get("sources")
-        if not isinstance(refs, list) or any(not isinstance(r, str) for r in refs):
-            errors.append(f"{loc}: sources must be a string list")
-        else:
-            for ref in refs:
-                if ref not in source_ids:
-                    errors.append(f"{loc}: unknown source {ref}")
-    return errors
+def validate_sources(data):
+    return call('validate_sources', data)
 
 
-def validate_cases(cases: list[object], rule_ids: set[str]) -> list[str]:
-    errors: list[str] = []
-    seen: set[str] = set()
-    if not cases:
-        errors.append("cases: empty dataset")
-    for index, case in enumerate(cases, 1):
-        loc = f"cases[{index}]"
-        if not isinstance(case, dict):
-            errors.append(f"{loc}: expected an object")
-            continue
-        cid = case.get("case_id")
-        if not nonempty(cid):
-            errors.append(f"{loc}: missing case_id")
-        elif cid in seen:
-            errors.append(f"{loc}: duplicate case id {cid}")
-        else:
-            seen.add(cid)
-        for key in ("pair_id", "source", "candidate", "topic", "note"):
-            if not nonempty(case.get(key)):
-                errors.append(f"{loc}: missing {key}")
-        if case.get("expected_review") not in LABELS:
-            errors.append(f"{loc}: invalid expected_review")
-        # The public seed set must never silently become a human-validated holdout.
-        for key, value in (("origin", "synthetic_original"), ("split", "development_only"),
-                           ("label_status", "ai_draft_not_human_adjudicated")):
-            if case.get(key) != value:
-                errors.append(f"{loc}: seed {key} must remain {value}")
-        refs = case.get("rule_ids")
-        if not isinstance(refs, list) or not refs or any(not isinstance(r, str) for r in refs):
-            errors.append(f"{loc}: rule_ids must be a nonempty string list")
-        else:
-            for ref in refs:
-                if ref not in rule_ids:
-                    errors.append(f"{loc}: unknown rule {ref}")
-    return errors
+def validate_rules(data, source_ids):
+    return call('validate_rules', data, sorted(source_ids))
 
 
-def validate_examples(examples: object, loc: str) -> list[str]:
-    """Shared development-example contract; labels are not human ground truth."""
-    if not isinstance(examples, list) or not examples:
-        return [f"{loc}: examples must be a nonempty list"]
-    errors: list[str] = []
-    labels: set[str] = set()
-    for example in examples:
-        if not isinstance(example, dict):
-            errors.append(f"{loc}: example must be an object")
-            continue
-        for key in ("source", "candidate", "reason"):
-            if not nonempty(example.get(key)):
-                errors.append(f"{loc}: example missing {key}")
-        label = example.get("expected_review")
-        if not isinstance(label, str) or label not in LABELS:
-            errors.append(f"{loc}: invalid example label")
-        else:
-            labels.add(label)
-        for key, expected in (("origin", "synthetic_original"), ("split", "development_only"),
-                              ("label_status", "ai_draft_not_human_adjudicated")):
-            if example.get(key) != expected:
-                errors.append(f"{loc}: example {key} must remain {expected}")
-    if labels != LABELS:
-        errors.append(f"{loc}: examples must cover compatible, meaning_changed and needs_context")
-    return errors
+def validate_cases(cases, rule_ids):
+    return call('validate_cases', cases, sorted(rule_ids))
 
 
-def validate_expressions(data: object, rule_ids: set[str]) -> list[str]:
-    if not isinstance(data, dict) or not isinstance(data.get("entries"), list):
-        return ["expressions: expected an entries list"]
-    errors: list[str] = []
-    if data.get("schema_version") != "0.1" or not data["entries"]:
-        errors.append("expressions: expected schema_version 0.1 and nonempty entries")
-    seen: set[str] = set()
-    signals_seen: set[str] = set()
-    for index, entry in enumerate(data["entries"], 1):
-        loc = f"expressions[{index}]"
-        if not isinstance(entry, dict):
-            errors.append(f"{loc}: expected an object")
-            continue
-        eid = entry.get("id")
-        if not isinstance(eid, str) or not re.fullmatch(r"EXPR-[0-9]{2}", eid):
-            errors.append(f"{loc}: invalid id")
-        elif eid in seen:
-            errors.append(f"{loc}: duplicate id")
-        else:
-            seen.add(eid)
-        for key in ("preferred", "meaning"):
-            if not nonempty(entry.get(key)):
-                errors.append(f"{loc}: missing {key}")
-        for key in ("signals", "conditions", "exceptions", "rule_ids"):
-            values = entry.get(key)
-            if not isinstance(values, list) or not values or any(not nonempty(v) for v in values):
-                errors.append(f"{loc}: invalid {key}")
-                continue
-            if len(set(values)) != len(values):
-                errors.append(f"{loc}: duplicate {key}")
-            if key == "rule_ids" and any(v not in rule_ids for v in values):
-                errors.append(f"{loc}: unknown rule id")
-            if key == "signals":
-                if signals_seen.intersection(values):
-                    errors.append(f"{loc}: duplicate signal across entries")
-                signals_seen.update(values)
-        if entry.get("replacement") != "never_automatic":
-            errors.append(f"{loc}: automatic replacement is not allowed")
-        errors.extend(validate_examples(entry.get("examples"), loc))
-    return errors
+def validate_examples(examples, loc):
+    return call('validate_examples', examples, loc)
 
 
-def validate_terminology(data: object, rule_ids: set[str]) -> list[str]:
-    """Validate dictionary structure and provisional labels, not their meaning."""
-    if not isinstance(data, dict) or not isinstance(data.get("entries"), list):
-        return ["terminology: expected an object with an entries list"]
-    errors: list[str] = []
-    if data.get("schema_version") != "0.2":
-        errors.append("terminology: expected schema_version 0.2")
-    if not data["entries"]:
-        errors.append("terminology: entries must not be empty")
-    seen: set[str] = set()
-    for index, term in enumerate(data["entries"], 1):
-        loc = f"terminology[{index}]"
-        if not isinstance(term, dict):
-            errors.append(f"{loc}: expected an object")
-            continue
-        tid = term.get("id")
-        if not isinstance(tid, str) or not re.fullmatch(r"TERM-[0-9]{2}", tid):
-            errors.append(f"{loc}: invalid term id")
-        elif tid in seen:
-            errors.append(f"{loc}: duplicate term id {tid}")
-        else:
-            seen.add(tid)
-        for key in ("term_a", "meaning_a", "term_b", "meaning_b", "scope", "status"):
-            if not nonempty(term.get(key)):
-                errors.append(f"{loc}: missing {key}")
-        if term.get("term_a") == term.get("term_b"):
-            errors.append(f"{loc}: distinct terms required")
-        if term.get("replacement") != "never_automatic":
-            errors.append(f"{loc}: automatic replacement is not allowed")
-        refs = term.get("rule_ids")
-        if not isinstance(refs, list) or not refs or any(not isinstance(r, str) for r in refs):
-            errors.append(f"{loc}: rule_ids must be a nonempty string list")
-        elif len(refs) != len(set(refs)) or any(r not in rule_ids for r in refs):
-            errors.append(f"{loc}: unknown or duplicate rule id")
-        exceptions = term.get("exceptions")
-        if not isinstance(exceptions, list) or not exceptions or any(not nonempty(x) for x in exceptions):
-            errors.append(f"{loc}: exceptions must be nonempty strings")
-        errors.extend(validate_examples(term.get("examples"), loc))
-    return errors
+def validate_terminology(data, rule_ids):
+    return call('validate_terminology', data, sorted(rule_ids))
 
 
-def without_fences(text: str) -> str:
-    """Skip backtick/tilde fenced blocks, including the blockquote examples."""
-    out: list[str] = []
-    marker = ""
-    for line in text.splitlines():
-        candidate = re.sub(r"^\s*>\s?", "", line).lstrip()
-        match = re.match(r"(`{3,}|~{3,})", candidate)
-        if not marker and match:
-            marker = match.group(1)
-            continue
-        if marker:
-            if candidate.startswith(marker) and not candidate[len(marker):].strip():
-                marker = ""
-            continue
-        out.append(line)
-    return "\n".join(out)
+def validate_expressions(data, rule_ids):
+    return call('validate_expressions', data, sorted(rule_ids))
 
 
-def local_link_errors(root: Path, document: Path, text: str) -> list[str]:
-    errors: list[str] = []
-    root = root.resolve()
-    for target in re.findall(r"\[[^\]\n]*\]\(([^)\n]+)\)", without_fences(text)):
-        target = target.strip().strip("<>")
-        # Link titles and reference-style links are not supported by this check.
-        parts = urlsplit(target)
-        if parts.scheme or parts.netloc or not parts.path:
-            continue
-        path = (document.parent / unquote(parts.path)).resolve()
-        if not path.is_relative_to(root):
-            errors.append(f"{document.name}: link escapes package: {target}")
-        elif not path.is_file():
-            errors.append(f"{document.name}: broken local file link: {target}")
-    return errors
+def without_fences(text):
+    return call('without_fences', text)
 
 
-def selected_metadata_errors(skill: str, cff: str, version: str) -> list[str]:
-    """Check selected known scalar fields, not all YAML or CFF syntax."""
-    errors: list[str] = []
-    match = re.match(r"\A---\n(.*?)\n---(?:\n|$)", skill, re.S)
-    if not match:
-        return ["SKILL.md: missing front matter"]
-    front = match.group(1)
-    fields = dict(re.findall(r"^([a-z][a-z-]*):\s*(.*)$", front, re.M))
-    if fields.get("name") != "dot-stk100":
-        errors.append("SKILL.md: name must be dot-stk100")
-    if not re.search(r'^  author:\s*dotoridot\s*$', front, re.M):
-        errors.append("SKILL.md: author must be dotoridot")
-    if not re.search(r'^  - name:\s*"dotoridot"\s*$', cff, re.M):
-        errors.append("CITATION.cff: author name must be dotoridot")
-    if not 1 <= len(fields.get("description", "")) <= 1024:
-        errors.append("SKILL.md: description length outside 1..1024")
-    if not re.search(r'^  version:\s*[\"\']?' + re.escape(version) + r'[\"\']?\s*$', front, re.M):
-        errors.append("SKILL.md: metadata version mismatch")
-    if not re.search(r'^version:\s*[\"\']?' + re.escape(version) + r'[\"\']?\s*$', cff, re.M):
-        errors.append("CITATION.cff: version mismatch")
-    return errors
+def local_link_errors(root, document, text):
+    return call('local_link_errors', str(root), str(document), text)
 
 
-def validate(root: Path) -> tuple[list[str], dict[str, int]]:
-    root = root.resolve()
-    errors: list[str] = []
-    counts: dict[str, int] = {}
-    for relative in REQUIRED:
-        path = (root / relative).resolve()
-        if not path.is_relative_to(root) or not path.is_file():
-            errors.append(f"missing or out-of-root required file: {relative}")
-    if errors:
-        return errors, counts
-    try:
-        rules = json.loads((root / "rules/rules.json").read_text(encoding="utf-8"))
-        sources = json.loads((root / "references/sources.json").read_text(encoding="utf-8"))
-        cases = [json.loads(line) for line in (root / "eval/seed-cases.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
-        errors.extend(validate_sources(sources))
-        source_ids = {s["id"] for s in sources.get("sources", []) if isinstance(s, dict) and isinstance(s.get("id"), str)} if isinstance(sources, dict) else set()
-        errors.extend(validate_rules(rules, source_ids))
-        rule_ids = {r["id"] for r in rules.get("rules", []) if isinstance(r, dict) and isinstance(r.get("id"), str)} if isinstance(rules, dict) else set()
-        errors.extend(validate_cases(cases, rule_ids))
-        for path in root.rglob("*.json"):
-            if not path.resolve().is_relative_to(root):
-                errors.append(f"JSON symlink outside package: {path.name}")
-                continue
-            json.loads(path.read_text(encoding="utf-8"))
-        for path in root.rglob("*.md"):
-            if not path.resolve().is_relative_to(root):
-                errors.append(f"Markdown symlink outside package: {path.name}")
-                continue
-            errors.extend(local_link_errors(root, path, path.read_text(encoding="utf-8")))
-        if isinstance(rules, dict) and isinstance(rules.get("rules"), list):
-            path = root / "references/DOT-STK100-SPEC.md"
-            text = path.read_text(encoding="utf-8")
-            if render_document(text, rules["rules"]) != text:
-                errors.append("generated rule table is stale")
-            errors.extend(selected_metadata_errors(
-                (root / "SKILL.md").read_text(encoding="utf-8"),
-                (root / "CITATION.cff").read_text(encoding="utf-8"), str(rules.get("version", ""))))
-        terms = json.loads((root / "references/terminology.json").read_text(encoding="utf-8"))
-        if terms.get("version") != rules.get("version"):
-            errors.append("terminology version mismatch")
-        errors.extend(validate_terminology(terms, rule_ids))
-        term_ids = {t["id"] for t in terms.get("entries", [])
-                    if isinstance(t, dict) and isinstance(t.get("id"), str)}
-        expressions = json.loads((root / "references/preferred-expressions.json").read_text(encoding="utf-8"))
-        if expressions.get("version") != rules.get("version"):
-            errors.append("expressions version mismatch")
-        errors.extend(validate_expressions(expressions, rule_ids))
-        counts = {"rules": len(rule_ids), "sources": len(source_ids), "seed_cases": len(cases),
-                  "source_families": len({c["pair_id"] for c in cases if isinstance(c, dict) and isinstance(c.get("pair_id"), str)}),
-                  "term_pairs": len(term_ids), "preferred_expressions": len(expressions["entries"])}
-    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError, AttributeError) as exc:
-        errors.append(f"package parse/check error: {exc}")
-    return errors, counts
+def selected_metadata_errors(skill, cff, version):
+    return call('selected_metadata_errors', skill, cff, version)
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
-    args = parser.parse_args(argv)
-    errors, counts = validate(args.root)
-    if errors:
-        for error in errors:
-            print(f"FAIL: {error}", file=sys.stderr)
-        return 1
-    print("PASS: package structure and references")
-    print(json.dumps(counts, ensure_ascii=False, sort_keys=True))
-    print("NOT CHECKED: semantic labels, facts, readability, host compatibility or real-world effectiveness")
-    return 0
+def validate(root):
+    return tuple(call('validate', str(root)))
 
 
-if __name__ == "__main__":
+def main(argv=None):
+    return native_main('validate', argv)
+
+
+if __name__ == '__main__':
     raise SystemExit(main())
