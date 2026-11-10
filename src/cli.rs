@@ -277,7 +277,11 @@ fn execute(args: &[String]) -> Result<i32, String> {
             }) {
                 return Err("this evaluator accepts only provisional development data".into());
             }
-            let mut result = evaluate::evaluate(&root, &cases)?;
+            let mut result = if terminology {
+                evaluate::evaluate_with_terminology(&root, &cases, &raw)?
+            } else {
+                evaluate::evaluate(&root, &cases)?
+            };
             result["dataset_sha256"] = json!(format!("{:x}", Sha256::digest(&raw)));
             result["implementation_sha256"] = json!(format!(
                 "{:x}",

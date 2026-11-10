@@ -4,6 +4,22 @@ use std::collections::{BTreeSet, HashSet};
 use std::path::Path;
 
 pub fn evaluate(root: &Path, cases: &Value) -> Result<Value, String> {
+    evaluate_inner(root, cases, None)
+}
+
+pub(crate) fn evaluate_with_terminology(
+    root: &Path,
+    cases: &Value,
+    raw: &[u8],
+) -> Result<Value, String> {
+    evaluate_inner(root, cases, Some(raw))
+}
+
+fn evaluate_inner(
+    root: &Path,
+    cases: &Value,
+    terminology_raw: Option<&[u8]>,
+) -> Result<Value, String> {
     let cases = cases.as_array().ok_or("cases must be an array")?;
     let (mut tp, mut fp, mut tn, mut fn_count, mut needs_context) = (0, 0, 0, 0, 0);
     let mut rows = Vec::new();
@@ -20,7 +36,10 @@ pub fn evaluate(root: &Path, cases: &Value) -> Result<Value, String> {
             .get("candidate")
             .and_then(Value::as_str)
             .ok_or("missing or invalid candidate")?;
-        let context = context.get_or_insert_with(|| ReviewContext::new(root, None));
+        let context = context.get_or_insert_with(|| match terminology_raw {
+            Some(raw) => ReviewContext::with_terminology(root, raw),
+            None => ReviewContext::new(root, None),
+        });
         let result = context
             .as_ref()
             .map_err(Clone::clone)?
@@ -79,6 +98,37 @@ pub fn evaluate(root: &Path, cases: &Value) -> Result<Value, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn preloaded_terminology_identifies_the_same_bytes_without_rereading() {
+        let source = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let raw = std::fs::read(source.join("references/terminology.json")).unwrap();
+        let cases = json!([{"case_id":"one", "pair_id":"one", "source":"탐지할 수 있습니다.", "candidate":"차단합니다.", "expected_review":"meaning_changed"}]);
+        let expected = evaluate(source, &cases).unwrap();
+        let root = std::env::temp_dir().join(format!(
+            "dot-stk100-eval-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(root.join("rules")).unwrap();
+        std::fs::create_dir_all(root.join("references")).unwrap();
+        for relative in [
+            "rules/rules.json",
+            "references/lint-terms.json",
+            "references/preferred-expressions.json",
+        ] {
+            std::fs::copy(source.join(relative), root.join(relative)).unwrap();
+        }
+        assert!(!root.join("references/terminology.json").exists());
+        assert_eq!(
+            evaluate_with_terminology(&root, &cases, &raw).unwrap(),
+            expected
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     #[test]
     fn empty_evaluation_keeps_unknown_rates() {
         let result = evaluate(Path::new("."), &json!([])).unwrap();

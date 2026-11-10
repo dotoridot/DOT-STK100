@@ -58,3 +58,5 @@ span은 원본 Python Unicode 코드 포인트 기준 0-based, 끝 제외다. li
 결과는 각 문서의 기존 review 결과를 입력 순서로 담은 JSON array다. 잘못된 항목이 있으면 종료 코드2와 stderr를 반환하고 부분 결과를 stdout에 쓰지 않는다. 빈 파일의 결과는 빈 array다. Python 소비처에서는 `scripts.lint_text.review_many(cases, term_config=None)`를 사용한다. 기존 `review` API는 유지한다.
 
 일괄 검사와 평가기는 각 자료를 호출 안에서 처음 사용할 때 읽고 같은 호출 동안 재사용한다. 서로 다른 파일을 같은 시점에 원자적으로 읽는다는 보장은 없다. 설정을 바꾸면 다음 독립 호출에서 다시 읽는다. 별도 daemon이나 호출 간 전역 설정 캐시는 사용하지 않는다. 단일 문서 CLI를 여러 번 실행하는 기존 경로는 계속 사용할 수 있지만 매번 프로세스를 시작하는 비용은 남는다.
+
+`evaluate --terminology-examples`에서는 사례를 읽을 때 받은 terminology 원본 bytes를 설정에도 전달한다. 같은 파일을 다시 읽지 않으며 dataset SHA와 distinctions SHA가 같은 원본을 식별한다.

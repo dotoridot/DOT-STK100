@@ -585,6 +585,12 @@ impl ReviewContext {
         })
     }
 
+    pub(crate) fn with_terminology(root: &Path, raw: &[u8]) -> Result<Self, String> {
+        let mut context = Self::new(root, None)?;
+        context.distinctions_raw = OnceCell::from(Ok((raw.to_vec(), sha256(raw))));
+        Ok(context)
+    }
+
     fn distinctions_raw(&self) -> Result<&(Vec<u8>, String), String> {
         self.distinctions_raw
             .get_or_init(|| {
