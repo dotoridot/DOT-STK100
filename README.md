@@ -148,13 +148,9 @@ ASD-STE100의 용어 관리 원칙을 선택적으로 참고하지만, 영어 �
 | [사례](examples/BEFORE-AFTER.md) | 가상 교정 예와 잘못된 단순화 |
 | [공개 체크리스트](docs/RELEASE-CHECKLIST.md) | 저작자·권리·보안·검증·승인 |
 
-## AI 에이전트에서 사용하기
+## AI 에이전트에서 호출하기
 
-AI 에이전트에게 다음과 같이 요청해 스킬을 설치하세요.
-
-```text
-https://github.com/dotoridot/DOT-STK100 스킬을 설치해줘.
-```
+스킬 설치 위치와 패키지 복사 방법은 [호스트별 설치 안내와 검증 상태](docs/HOST-COMPATIBILITY.md)를 확인하세요. 저장소 URL만 전달해 설치하는 방식과 실제 호스트의 스킬 실행은 검증하지 않았습니다.
 
 설치한 스킬은 Codex에서 `$dot-stk100`, Claude Code에서 `/dot-stk100`으로 호출할 수 있습니다. 예를 들어 다음과 같이 요청할 수 있습니다.
 
