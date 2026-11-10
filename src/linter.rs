@@ -2,10 +2,10 @@ use fancy_regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
-use std::cell::RefCell;
+use std::cell::{OnceCell, RefCell};
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
 pub const TOOL_VERSION: &str = "0.2.0";
@@ -553,126 +553,231 @@ fn array<'a>(value: &'a Value, key: &str) -> Result<&'a Vec<Value>, String> {
         .ok_or_else(|| format!("missing or invalid {key}"))
 }
 
-pub fn review(
-    root: &Path,
-    source: Option<&str>,
-    candidate: &str,
-    term_config: Option<Value>,
-) -> Result<Value, String> {
-    let config = match term_config {
-        Some(config) => config,
-        None => read_json(&root.join("references/lint-terms.json"))?,
-    };
-    validate_term_config(&config)?;
-    let rules = read_json(&root.join("rules/rules.json"))?;
-    let src = source.unwrap_or("");
-    let sp = protected_inner(src)?;
-    let cp = protected_inner(candidate)?;
-    let sm = mask(src, &sp);
-    let cm = mask(candidate, &cp);
-    let mut findings = Vec::new();
-    if source.is_some() && src != candidate {
-        compare(
-            &mut findings,
-            (src, candidate),
-            "protected",
-            "YSK-M05",
-            &sp,
-            &cp,
-            "보호 구간의 내용, 순서 또는 개수가 달라졌습니다.",
-        );
-        for (check, rule, pattern, kind, message) in [
-            (
-                "values",
-                "YSK-M04",
-                VALUE,
-                "value",
-                "값, 단위, 경계 또는 등장 순서가 달라졌습니다. 같은 값의 압축도 경고할 수 있습니다.",
-            ),
-            (
-                "identifiers",
-                "YSK-M05",
-                IDENTIFIER,
-                "identifier",
-                "API 또는 식별자 후보가 달라졌습니다.",
-            ),
-            (
-                "negation",
-                "YSK-M03",
-                NEGATION,
-                "negative",
-                "부정 표현이 달라졌습니다. 부정 대상과 부분 부정을 확인하세요.",
-            ),
-            (
-                "uncertainty",
-                "YSK-M08",
-                UNCERTAINTY,
-                "uncertainty",
-                "불확실성 표현이 달라졌습니다. 동의 표현일 수 있습니다.",
-            ),
-            (
-                "conditions",
-                "YSK-M02",
-                CONDITION,
-                "condition",
-                "조건 또는 예외 표현이 달라졌습니다.",
-            ),
-        ] {
-            let mut a = tokens(pattern, &sm, kind)?;
-            let mut b = tokens(pattern, &cm, kind)?;
-            if check == "identifiers" {
-                let keep = |t: &Token| {
-                    t.text.contains(['_', '.', ':', '(', ')'])
-                        || (t.text.len() > 1
-                            && (t.text.chars().any(|c| c.is_ascii_uppercase())
-                                && !t.text.chars().any(|c| c.is_ascii_lowercase())
-                                || t.text.as_bytes().windows(2).any(|w| {
-                                    w[0].is_ascii_lowercase() && w[1].is_ascii_uppercase()
-                                })))
-                };
-                a.retain(keep);
-                b.retain(keep);
-            }
+/// Reuse configuration only within one caller-owned operation. A new operation
+/// creates a new context so file updates remain visible between calls.
+pub struct ReviewContext {
+    root: PathBuf,
+    config: Value,
+    rules: Value,
+    terms_hash: String,
+    distinctions_raw: OnceCell<Result<(Vec<u8>, String), String>>,
+    distinctions: OnceCell<Result<Value, String>>,
+    expressions: OnceCell<Result<(Value, String), String>>,
+}
+
+impl ReviewContext {
+    pub fn new(root: &Path, term_config: Option<Value>) -> Result<Self, String> {
+        let config = match term_config {
+            Some(config) => config,
+            None => read_json(&root.join("references/lint-terms.json"))?,
+        };
+        validate_term_config(&config)?;
+        let rules = read_json(&root.join("rules/rules.json"))?;
+        let terms_hash = sha256(python_json(&config).as_bytes());
+        Ok(Self {
+            root: root.to_owned(),
+            config,
+            rules,
+            terms_hash,
+            distinctions_raw: OnceCell::new(),
+            distinctions: OnceCell::new(),
+            expressions: OnceCell::new(),
+        })
+    }
+
+    fn distinctions_raw(&self) -> Result<&(Vec<u8>, String), String> {
+        self.distinctions_raw
+            .get_or_init(|| {
+                let raw = fs::read(self.root.join("references/terminology.json"))
+                    .map_err(|e| e.to_string())?;
+                let hash = sha256(&raw);
+                Ok((raw, hash))
+            })
+            .as_ref()
+            .map_err(Clone::clone)
+    }
+
+    fn distinctions(&self) -> Result<&Value, String> {
+        self.distinctions
+            .get_or_init(|| {
+                let path = self.root.join("references/terminology.json");
+                let raw = self
+                    .distinctions_raw()
+                    .map_err(|e| format!("{}: {e}", path.display()))?;
+                serde_json::from_slice(&raw.0).map_err(|e| format!("{}: {e}", path.display()))
+            })
+            .as_ref()
+            .map_err(Clone::clone)
+    }
+
+    fn expressions(&self) -> Result<&(Value, String), String> {
+        self.expressions
+            .get_or_init(|| {
+                let raw = fs::read(self.root.join("references/preferred-expressions.json"))
+                    .map_err(|e| e.to_string())?;
+                let value = serde_json::from_slice(&raw).map_err(|e| e.to_string())?;
+                Ok((value, sha256(&raw)))
+            })
+            .as_ref()
+            .map_err(Clone::clone)
+    }
+
+    pub fn review(&self, source: Option<&str>, candidate: &str) -> Result<Value, String> {
+        let config = &self.config;
+        let rules = &self.rules;
+        let src = source.unwrap_or("");
+        let sp = protected_inner(src)?;
+        let cp = protected_inner(candidate)?;
+        let sm = mask(src, &sp);
+        let cm = mask(candidate, &cp);
+        let mut findings = Vec::new();
+        if source.is_some() && src != candidate {
             compare(
                 &mut findings,
                 (src, candidate),
-                check,
-                rule,
-                &a,
-                &b,
-                message,
+                "protected",
+                "YSK-M05",
+                &sp,
+                &cp,
+                "보호 구간의 내용, 순서 또는 개수가 달라졌습니다.",
             );
-            if check == "conditions"
-                && !a.is_empty()
-                && tokens(r"[.!?](?:\s|$)|\n", &sm, "boundary")?.len()
-                    != tokens(r"[.!?](?:\s|$)|\n", &cm, "boundary")?.len()
-            {
-                add(
-                    &mut findings,
-                    src,
-                    candidate,
+            for (check, rule, pattern, kind, message) in [
+                (
+                    "values",
+                    "YSK-M04",
+                    VALUE,
+                    "value",
+                    "값, 단위, 경계 또는 등장 순서가 달라졌습니다. 같은 값의 압축도 경고할 수 있습니다.",
+                ),
+                (
+                    "identifiers",
+                    "YSK-M05",
+                    IDENTIFIER,
+                    "identifier",
+                    "API 또는 식별자 후보가 달라졌습니다.",
+                ),
+                (
+                    "negation",
+                    "YSK-M03",
+                    NEGATION,
+                    "negative",
+                    "부정 표현이 달라졌습니다. 부정 대상과 부분 부정을 확인하세요.",
+                ),
+                (
+                    "uncertainty",
+                    "YSK-M08",
+                    UNCERTAINTY,
+                    "uncertainty",
+                    "불확실성 표현이 달라졌습니다. 동의 표현일 수 있습니다.",
+                ),
+                (
                     "conditions",
                     "YSK-M02",
-                    "조건이 있는 글의 문장 또는 목록 경계가 바뀌었습니다. 뒤 문장의 조건 범위를 확인하세요.",
-                    (a.first(), b.first()),
+                    CONDITION,
+                    "condition",
+                    "조건 또는 예외 표현이 달라졌습니다.",
+                ),
+            ] {
+                let mut a = tokens(pattern, &sm, kind)?;
+                let mut b = tokens(pattern, &cm, kind)?;
+                if check == "identifiers" {
+                    let keep = |t: &Token| {
+                        t.text.contains(['_', '.', ':', '(', ')'])
+                            || (t.text.len() > 1
+                                && (t.text.chars().any(|c| c.is_ascii_uppercase())
+                                    && !t.text.chars().any(|c| c.is_ascii_lowercase())
+                                    || t.text.as_bytes().windows(2).any(|w| {
+                                        w[0].is_ascii_lowercase() && w[1].is_ascii_uppercase()
+                                    })))
+                    };
+                    a.retain(keep);
+                    b.retain(keep);
+                }
+                compare(
+                    &mut findings,
+                    (src, candidate),
+                    check,
+                    rule,
+                    &a,
+                    &b,
+                    message,
                 );
+                if check == "conditions"
+                    && !a.is_empty()
+                    && tokens(r"[.!?](?:\s|$)|\n", &sm, "boundary")?.len()
+                        != tokens(r"[.!?](?:\s|$)|\n", &cm, "boundary")?.len()
+                {
+                    add(
+                        &mut findings,
+                        src,
+                        candidate,
+                        "conditions",
+                        "YSK-M02",
+                        "조건이 있는 글의 문장 또는 목록 경계가 바뀌었습니다. 뒤 문장의 조건 범위를 확인하세요.",
+                        (a.first(), b.first()),
+                    );
+                }
+            }
+            let distinctions = self.distinctions()?;
+            for entry in array(distinctions, "entries")? {
+                let (a, b) = (string(entry, "term_a")?, string(entry, "term_b")?);
+                let (sa, ca, sb, cb) = (
+                    sm.matches(a).count(),
+                    cm.matches(a).count(),
+                    sm.matches(b).count(),
+                    cm.matches(b).count(),
+                );
+                if (sa > ca && cb > sb) || (sb > cb && ca > sa) {
+                    let (old, new) = if sa > ca { (a, b) } else { (b, a) };
+                    let old_start = sm[..sm.find(old).ok_or("term not found")?].chars().count();
+                    let new_start = cm[..cm.find(new).ok_or("term not found")?].chars().count();
+                    let old_token = token(&sm, old_start, old_start + old.chars().count(), "term");
+                    let new_token = token(&cm, new_start, new_start + new.chars().count(), "term");
+                    add(
+                        &mut findings,
+                        src,
+                        candidate,
+                        "terminology",
+                        "YSK-K05",
+                        &format!(
+                            "{}: 서로 다른 개념인 {a}/{b}의 사용량이 바뀌었습니다. terminology.json의 정의와 예외를 대조하세요.",
+                            string(entry, "id")?
+                        ),
+                        (Some(&old_token), Some(&new_token)),
+                    );
+                }
             }
         }
-        let distinctions = read_json(&root.join("references/terminology.json"))?;
-        for entry in array(&distinctions, "entries")? {
-            let (a, b) = (string(entry, "term_a")?, string(entry, "term_b")?);
-            let (sa, ca, sb, cb) = (
-                sm.matches(a).count(),
-                cm.matches(a).count(),
-                sm.matches(b).count(),
-                cm.matches(b).count(),
+        for item in tokens(
+            r"이것|그것|해당\s*(?:프로세스|모듈|대상|처리)|기록됩니다|전송됩니다|처리됩니다",
+            &cm,
+            "subject",
+        )? {
+            add(
+                &mut findings,
+                src,
+                candidate,
+                "subject",
+                "YSK-K02",
+                "지시 대상 또는 행동 주체를 문맥에서 확인하세요. 피동형 자체는 오류가 아닙니다.",
+                (None, Some(&item)),
             );
-            if (sa > ca && cb > sb) || (sb > cb && ca > sa) {
-                let (old, new) = if sa > ca { (a, b) } else { (b, a) };
-                let old_start = sm[..sm.find(old).ok_or("term not found")?].chars().count();
-                let new_start = cm[..cm.find(new).ok_or("term not found")?].chars().count();
-                let old_token = token(&sm, old_start, old_start + old.chars().count(), "term");
-                let new_token = token(&cm, new_start, new_start + new.chars().count(), "term");
+        }
+        for group in array(config, "groups")? {
+            let mut hits = Vec::new();
+            let canonical = string(group, "canonical")?;
+            for term in std::iter::once(canonical)
+                .chain(array(group, "variants")?.iter().filter_map(Value::as_str))
+            {
+                let pattern = format!(
+                    r"(?<![A-Za-z0-9_가-힣]){}(?![A-Za-z0-9_])",
+                    regex::escape(term)
+                );
+                if let Some(hit) = tokens(&pattern, &cm, "term")?.into_iter().next() {
+                    hits.push(hit);
+                }
+            }
+            if hits.len() > 1 {
                 add(
                     &mut findings,
                     src,
@@ -680,101 +785,97 @@ pub fn review(
                     "terminology",
                     "YSK-K05",
                     &format!(
-                        "{}: 서로 다른 개념인 {a}/{b}의 사용량이 바뀌었습니다. terminology.json의 정의와 예외를 대조하세요.",
-                        string(entry, "id")?
+                        "{}: 표기 후보가 혼용됩니다. 프로젝트 정의가 같은지 먼저 확인하세요.",
+                        string(group, "id")?
                     ),
-                    (Some(&old_token), Some(&new_token)),
+                    (None, Some(&hits[1])),
                 );
             }
         }
-    }
-    for item in tokens(
-        r"이것|그것|해당\s*(?:프로세스|모듈|대상|처리)|기록됩니다|전송됩니다|처리됩니다",
-        &cm,
-        "subject",
-    )? {
-        add(
-            &mut findings,
-            src,
-            candidate,
-            "subject",
-            "YSK-K02",
-            "지시 대상 또는 행동 주체를 문맥에서 확인하세요. 피동형 자체는 오류가 아닙니다.",
-            (None, Some(&item)),
-        );
-    }
-    for group in array(&config, "groups")? {
-        let mut hits = Vec::new();
-        let canonical = string(group, "canonical")?;
-        for term in std::iter::once(canonical)
-            .chain(array(group, "variants")?.iter().filter_map(Value::as_str))
-        {
-            let pattern = format!(
-                r"(?<![A-Za-z0-9_가-힣]){}(?![A-Za-z0-9_])",
-                regex::escape(term)
-            );
-            if let Some(hit) = tokens(&pattern, &cm, "term")?.into_iter().next() {
-                hits.push(hit);
+        let expressions = &self.expressions()?.0;
+        for entry in array(expressions, "entries")? {
+            for signal in array(entry, "signals")? {
+                let signal = signal.as_str().ok_or("invalid expression signal")?;
+                let pattern = format!(r"(?<![A-Za-z0-9_가-힣]){}", regex::escape(signal));
+                for hit in tokens(&pattern, &cm, "expression")? {
+                    add(
+                        &mut findings,
+                        src,
+                        candidate,
+                        "terminology",
+                        "YSK-K07",
+                        &format!(
+                            "{}: 권장 표현 후보는 {}입니다. 적용 조건과 예외, 부정과 의무 수준을 확인하세요. 원문 유지가 적절할 수 있습니다.",
+                            string(entry, "id")?,
+                            string(entry, "preferred")?
+                        ),
+                        (None, Some(&hit)),
+                    );
+                }
             }
         }
-        if hits.len() > 1 {
-            add(
-                &mut findings,
-                src,
-                candidate,
-                "terminology",
-                "YSK-K05",
-                &format!(
-                    "{}: 표기 후보가 혼용됩니다. 프로젝트 정의가 같은지 먼저 확인하세요.",
-                    string(group, "id")?
-                ),
-                (None, Some(&hits[1])),
+        let mut skipped = vec![
+            "semantic_equivalence".to_owned(),
+            "facts".to_owned(),
+            "causal_and_actor_binding".to_owned(),
+            "full_commonmark".to_owned(),
+            "human_evaluation".to_owned(),
+            "length_disabled_by_default".to_owned(),
+        ];
+        if source.is_none() {
+            skipped.extend(
+                CHECKS
+                    .iter()
+                    .filter(|check| !matches!(**check, "subject" | "terminology"))
+                    .map(|check| format!("source_comparison:{check}")),
             );
         }
+        Ok(
+            json!({ "schema_version": "0.2", "tool_version": TOOL_VERSION, "spec_version": rules.get("version").ok_or("missing version")?, "input_hashes": { "source": source.map(|s| sha256(s.as_bytes())), "candidate": sha256(candidate.as_bytes()) }, "config_hashes": { "terms": self.terms_hash, "distinctions": self.distinctions_raw()?.1, "expressions": self.expressions()?.1 }, "span_convention": "0-based Python Unicode code points; end exclusive; line/column 1-based; no normalization", "checks_run": if source.is_some() { CHECKS.to_vec() } else { vec!["subject", "terminology"] }, "checks_skipped": skipped, "findings": findings, "notice": "경고는 검토 후보입니다. 경고 없음과 종료 코드 0은 의미 보존이나 사실의 정확성을 보장하지 않습니다." }),
+        )
     }
-    let expressions_raw =
-        fs::read(root.join("references/preferred-expressions.json")).map_err(|e| e.to_string())?;
-    let expressions: Value = serde_json::from_slice(&expressions_raw).map_err(|e| e.to_string())?;
-    for entry in array(&expressions, "entries")? {
-        for signal in array(entry, "signals")? {
-            let signal = signal.as_str().ok_or("invalid expression signal")?;
-            let pattern = format!(r"(?<![A-Za-z0-9_가-힣]){}", regex::escape(signal));
-            for hit in tokens(&pattern, &cm, "expression")? {
-                add(
-                    &mut findings,
-                    src,
-                    candidate,
-                    "terminology",
-                    "YSK-K07",
-                    &format!(
-                        "{}: 권장 표현 후보는 {}입니다. 적용 조건과 예외, 부정과 의무 수준을 확인하세요. 원문 유지가 적절할 수 있습니다.",
-                        string(entry, "id")?,
-                        string(entry, "preferred")?
-                    ),
-                    (None, Some(&hit)),
-                );
-            }
-        }
+}
+
+pub fn review(
+    root: &Path,
+    source: Option<&str>,
+    candidate: &str,
+    term_config: Option<Value>,
+) -> Result<Value, String> {
+    ReviewContext::new(root, term_config)?.review(source, candidate)
+}
+
+pub fn review_many(
+    root: &Path,
+    cases: &Value,
+    term_config: Option<Value>,
+) -> Result<Value, String> {
+    let cases = cases.as_array().ok_or("batch cases must be an array")?;
+    let inputs: Vec<(Option<&str>, &str)> = cases
+        .iter()
+        .map(|case| {
+            let case = case.as_object().ok_or("batch case must be an object")?;
+            let source = match case.get("source") {
+                None | Some(Value::Null) => None,
+                Some(Value::String(source)) => Some(source.as_str()),
+                _ => return Err("source must be a string or null".to_owned()),
+            };
+            let candidate = case
+                .get("candidate")
+                .and_then(Value::as_str)
+                .ok_or("batch candidate must be a string")?;
+            Ok((source, candidate))
+        })
+        .collect::<Result<_, String>>()?;
+    if inputs.is_empty() {
+        return Ok(json!([]));
     }
-    let mut skipped = vec![
-        "semantic_equivalence".to_owned(),
-        "facts".to_owned(),
-        "causal_and_actor_binding".to_owned(),
-        "full_commonmark".to_owned(),
-        "human_evaluation".to_owned(),
-        "length_disabled_by_default".to_owned(),
-    ];
-    if source.is_none() {
-        skipped.extend(
-            CHECKS
-                .iter()
-                .filter(|check| !matches!(**check, "subject" | "terminology"))
-                .map(|check| format!("source_comparison:{check}")),
-        );
-    }
-    Ok(
-        json!({ "schema_version": "0.2", "tool_version": TOOL_VERSION, "spec_version": rules.get("version").ok_or("missing version")?, "input_hashes": { "source": source.map(|s| sha256(s.as_bytes())), "candidate": sha256(candidate.as_bytes()) }, "config_hashes": { "terms": sha256(python_json(&config).as_bytes()), "distinctions": sha256(&fs::read(root.join("references/terminology.json")).map_err(|e| e.to_string())?), "expressions": sha256(&expressions_raw) }, "span_convention": "0-based Python Unicode code points; end exclusive; line/column 1-based; no normalization", "checks_run": if source.is_some() { CHECKS.to_vec() } else { vec!["subject", "terminology"] }, "checks_skipped": skipped, "findings": findings, "notice": "경고는 검토 후보입니다. 경고 없음과 종료 코드 0은 의미 보존이나 사실의 정확성을 보장하지 않습니다." }),
-    )
+    let context = ReviewContext::new(root, term_config)?;
+    let results: Vec<Value> = inputs
+        .into_iter()
+        .map(|(source, candidate)| context.review(source, candidate))
+        .collect::<Result<_, _>>()?;
+    Ok(json!(results))
 }
 
 #[cfg(test)]
@@ -857,5 +958,162 @@ mod tests {
         ] {
             assert_eq!(python_json(&serde_json::from_str(raw).unwrap()), expected);
         }
+    }
+
+    fn fixture() -> std::path::PathBuf {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static NEXT: AtomicU64 = AtomicU64::new(0);
+        let root = std::env::temp_dir().join(format!(
+            "dot-stk100-context-{}-{}",
+            std::process::id(),
+            NEXT.fetch_add(1, Ordering::Relaxed)
+        ));
+        fs::create_dir_all(root.join("rules")).unwrap();
+        fs::create_dir_all(root.join("references")).unwrap();
+        for relative in [
+            "rules/rules.json",
+            "references/lint-terms.json",
+            "references/terminology.json",
+            "references/preferred-expressions.json",
+        ] {
+            fs::copy(
+                Path::new(env!("CARGO_MANIFEST_DIR")).join(relative),
+                root.join(relative),
+            )
+            .unwrap();
+        }
+        root
+    }
+
+    #[test]
+    fn batch_matches_independent_reviews_in_input_order() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let mut cases: Vec<Value> = fs::read_to_string(root.join("eval/seed-cases.jsonl"))
+            .unwrap()
+            .lines()
+            .filter(|s| !s.trim().is_empty())
+            .map(|s| serde_json::from_str(s).unwrap())
+            .collect();
+        for relative in [
+            "references/terminology.json",
+            "references/preferred-expressions.json",
+        ] {
+            let dictionary = read_json(&root.join(relative)).unwrap();
+            cases.extend(
+                dictionary["entries"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .flat_map(|e| e["examples"].as_array().unwrap().iter().cloned()),
+            );
+        }
+        cases.extend([
+            json!({"source":null,"candidate":"😀e\u{301}\r\n초기화를 수행합니다."}),
+            json!({"candidate":"`3회` 그대로"}),
+            json!({"source":"3회", "candidate":"3회"}),
+        ]);
+        let expected: Vec<Value> = cases
+            .iter()
+            .map(|case| {
+                review(
+                    root,
+                    case["source"].as_str(),
+                    case["candidate"].as_str().unwrap(),
+                    None,
+                )
+                .unwrap()
+            })
+            .collect();
+        assert_eq!(
+            review_many(root, &json!(cases), None).unwrap(),
+            json!(expected)
+        );
+    }
+
+    #[test]
+    fn batch_validates_all_inputs_and_empty_batch_needs_no_files() {
+        let missing = Path::new("/dot-stk100-missing-context-root");
+        assert_eq!(review_many(missing, &json!([]), None).unwrap(), json!([]));
+        for cases in [
+            json!(null),
+            json!({}),
+            json!([null]),
+            json!([{"source":42,"candidate":"3회"}]),
+            json!([{"source":[],"candidate":"3회"}]),
+            json!([{"candidate":false}]),
+            json!([{"candidate":"ok"},{"candidate":42}]),
+        ] {
+            let error = review_many(missing, &cases, None).unwrap_err();
+            assert!(
+                !error.contains("No such file"),
+                "input error must precede package reads: {error}"
+            );
+        }
+    }
+
+    #[test]
+    fn context_reuses_its_first_read_but_independent_calls_reload() {
+        let root = fixture();
+        let context = ReviewContext::new(&root, None).unwrap();
+        let first = context
+            .review(Some("탐지할 수 있습니다."), "차단합니다.")
+            .unwrap();
+        for relative in [
+            "rules/rules.json",
+            "references/lint-terms.json",
+            "references/terminology.json",
+            "references/preferred-expressions.json",
+        ] {
+            fs::remove_file(root.join(relative)).unwrap();
+        }
+        assert_eq!(
+            first,
+            context
+                .review(Some("탐지할 수 있습니다."), "차단합니다.")
+                .unwrap()
+        );
+        assert!(review(&root, Some("탐지할 수 있습니다."), "차단합니다.", None).is_err());
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn independent_reviews_observe_dictionary_updates() {
+        let root = fixture();
+        let first = review(&root, None, "초기화를 수행합니다.", None).unwrap();
+        let path = root.join("references/preferred-expressions.json");
+        let mut changed = read_json(&path).unwrap();
+        changed["entries"] = json!([]);
+        fs::write(path, serde_json::to_vec(&changed).unwrap()).unwrap();
+        let second = review(&root, None, "초기화를 수행합니다.", None).unwrap();
+        assert_ne!(
+            first["config_hashes"]["expressions"],
+            second["config_hashes"]["expressions"]
+        );
+        assert_ne!(first["findings"], second["findings"]);
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn terminology_parse_remains_lazy_for_candidate_only_reviews() {
+        let root = fixture();
+        let path = root.join("references/terminology.json");
+        fs::write(&path, "{invalid JSON").unwrap();
+        let context = ReviewContext::new(&root, None).unwrap();
+        let candidate_only = context.review(None, "문서입니다.").unwrap();
+        assert_eq!(
+            candidate_only["config_hashes"]["distinctions"],
+            sha256(b"{invalid JSON")
+        );
+        assert!(context.review(Some("탐지"), "차단").is_err());
+        let valid =
+            fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("references/terminology.json"))
+                .unwrap();
+        fs::write(path, valid).unwrap();
+        assert!(
+            context.review(Some("탐지"), "차단").is_err(),
+            "one context must retain its first dictionary bytes"
+        );
+        assert!(review(&root, Some("탐지"), "차단", None).is_ok());
+        fs::remove_dir_all(root).unwrap();
     }
 }

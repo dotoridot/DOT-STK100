@@ -1,4 +1,4 @@
-use crate::linter::review;
+use crate::linter::ReviewContext;
 use serde_json::{Value, json};
 use std::collections::{BTreeSet, HashSet};
 use std::path::Path;
@@ -9,6 +9,7 @@ pub fn evaluate(root: &Path, cases: &Value) -> Result<Value, String> {
     let mut rows = Vec::new();
     let mut config_hashes = Value::Null;
     let mut families = HashSet::new();
+    let mut context: Option<Result<ReviewContext, String>> = None;
     for case in cases {
         let source = match case.get("source") {
             Some(Value::Null) => None,
@@ -19,7 +20,11 @@ pub fn evaluate(root: &Path, cases: &Value) -> Result<Value, String> {
             .get("candidate")
             .and_then(Value::as_str)
             .ok_or("missing or invalid candidate")?;
-        let result = review(root, source, candidate, None)?;
+        let context = context.get_or_insert_with(|| ReviewContext::new(root, None));
+        let result = context
+            .as_ref()
+            .map_err(Clone::clone)?
+            .review(source, candidate)?;
         config_hashes = result["config_hashes"].clone();
         let findings = result["findings"].as_array().ok_or("invalid findings")?;
         let warned = !findings.is_empty();

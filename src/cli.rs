@@ -55,6 +55,9 @@ fn bridge(root: &Path, op: &str) -> Result<Value, String> {
             a.get(2).filter(|v| !v.is_null()).cloned(),
         )?,
         "evaluate" => evaluate::evaluate(root, get(0)?)?,
+        "review_many" => {
+            linter::review_many(root, get(0)?, a.get(1).filter(|v| !v.is_null()).cloned())?
+        }
         "protected" => {
             serde_json::to_value(linter::protected(string(get(0)?)?)).map_err(|e| e.to_string())?
         }
@@ -109,7 +112,7 @@ fn bridge(root: &Path, op: &str) -> Result<Value, String> {
 
 fn help() {
     println!(
-        "DOT-STK100 offline report-only tools\nUsage: dot-stk100 <lint|evaluate|render|validate> [options]\n  lint --candidate PATH [--source PATH] [--terms PATH] [--format json]\n  evaluate [--cases PATH | --terminology-examples]\n  render [--check]\n  validate\nAll commands accept --root PATH. Build explicitly with cargo build --release --locked."
+        "DOT-STK100 offline report-only tools\nUsage: dot-stk100 <lint|lint-batch|evaluate|render|validate> [options]\n  lint --candidate PATH [--source PATH] [--terms PATH] [--format json]\n  lint-batch --cases PATH [--terms PATH]\n  evaluate [--cases PATH | --terminology-examples]\n  render [--check]\n  validate\nAll commands accept --root PATH. Build explicitly with cargo build --release --locked."
     );
 }
 
@@ -157,9 +160,13 @@ fn execute(args: &[String]) -> Result<i32, String> {
                     "--root" => package_root = Some(PathBuf::from(val)),
                     "--source" if command == "lint" => source = Some(PathBuf::from(val)),
                     "--candidate" if command == "lint" => candidate = Some(PathBuf::from(val)),
-                    "--terms" if command == "lint" => terms = Some(PathBuf::from(val)),
+                    "--terms" if matches!(command, "lint" | "lint-batch") => {
+                        terms = Some(PathBuf::from(val))
+                    }
                     "--format" if command == "lint" && val == "json" => {}
-                    "--cases" if command == "evaluate" => cases = Some(PathBuf::from(val)),
+                    "--cases" if matches!(command, "evaluate" | "lint-batch") => {
+                        cases = Some(PathBuf::from(val))
+                    }
                     _ => return Err(format!("unsupported option/value: {option} {val}")),
                 }
             }
@@ -193,6 +200,20 @@ fn execute(args: &[String]) -> Result<i32, String> {
                     terms
                 )?)
                 .map_err(|e| e.to_string())?
+            );
+        }
+        "lint-batch" => {
+            let input = read(&cases.ok_or("--cases is required")?)?;
+            let cases: Vec<Value> = input
+                .lines()
+                .filter(|line| !line.trim().is_empty())
+                .map(|line| serde_json::from_str(line).map_err(|e| e.to_string()))
+                .collect::<Result<_, _>>()?;
+            let terms = terms.map(|p| data(&p)).transpose()?;
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&linter::review_many(&root, &json!(cases), terms)?)
+                    .map_err(|e| e.to_string())?
             );
         }
         "evaluate" => {
