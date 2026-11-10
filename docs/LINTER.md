@@ -50,3 +50,15 @@ span은 원본 Python Unicode 코드 포인트 기준 0-based, 끝 제외다. li
 일부 Markdown 보호 구간을 제외하고 문자열 접두부를 찾으며, 완전한 한국어 형태소 분석은 하지 않는다. 부정형에서도 후보를 알릴 수 있으므로 부정과 의무 수준을 사람이 대조해야 한다. 프로젝트의 고유 용어를 일반 본문에 썼을 때 자동 예외 처리하지 않는다. signals는 정규식이 아닌 고정 문자열이고 자동 교정값은 제공하지 않는다.
 
 출력 schema_version은 0.2, tool_version은 0.2.0이다. config_hashes.expressions를 추가해 권장 표현 사전의 SHA-256을 기록한다. 출력 스키마를 고정해 검증하는 소비자는 eval/lint-output.schema.json 0.2를 사용해야 한다. 단일 문서 any-warning 집계에는 문체 후보도 포함되므로 과거 수치와 의미 검사 성능으로 비교하지 않는다.
+
+## 여러 문서의 일괄 검사
+
+여러 문서를 연속 검사할 때는 `bin/dot-stk100 lint-batch --cases pairs.jsonl`을 사용한다. 개발 저장소에서는 `target/release/dot-stk100`을 실행한다. 각 줄은 `{"source":"원문", "candidate":"수정문"}` 형태의 JSON object다. source를 생략하거나 null로 주면 후보 문서만 검사한다. candidate는 문자열이어야 한다. `--terms PATH`는 모든 항목에 적용할 표기 설정을 지정한다.
+
+결과는 각 문서의 기존 review 결과를 입력 순서로 담은 JSON array다. 잘못된 항목이 있으면 종료 코드2와 stderr를 반환하고 부분 결과를 stdout에 쓰지 않는다. 빈 파일의 결과는 빈 array다. Python 소비처에서는 `scripts.lint_text.review_many(cases, term_config=None)`를 사용한다. 기존 `review` API는 유지한다.
+
+일괄 검사와 평가기는 각 자료를 호출 안에서 처음 사용할 때 읽고 같은 호출 동안 재사용한다. 서로 다른 파일을 같은 시점에 원자적으로 읽는다는 보장은 없다. 설정을 바꾸면 다음 독립 호출에서 다시 읽는다. 별도 daemon이나 호출 간 전역 설정 캐시는 사용하지 않는다. 단일 문서 CLI를 여러 번 실행하는 기존 경로는 계속 사용할 수 있지만 매번 프로세스를 시작하는 비용은 남는다.
+
+`evaluate --terminology-examples`에서는 사례를 읽을 때 받은 terminology 원본 bytes를 설정에도 전달한다. 같은 파일을 다시 읽지 않으며 dataset SHA와 distinctions SHA가 같은 원본을 식별한다.
+
+평가 CLI의 spec_version도 실제 검사 결과에서 전달한다. 결과를 출력하기 위해 rules.json을 다시 읽지 않는다.

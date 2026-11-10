@@ -41,6 +41,11 @@ def review(source, candidate, term_config=None):
     return call('review', source, candidate, term_config)
 
 
+def review_many(cases, term_config=None):
+    """Review a sequence in one native call with one configuration snapshot."""
+    return call('review_many', cases, term_config)
+
+
 def main(argv=None):
     return native_main('lint', argv)
 

@@ -42,3 +42,15 @@ API 비교는 정상 결과, Unicode span, 순서, 해시와 직접 정의한 �
 측정은 1회 예열 후 조건별 최소11회 교대 실행합니다. Python/native/어댑터를 분리하고 모든 회차의 출력 동등성과 해시를 기록합니다. 어떤 회차라도 출력이 다르면 해당 측정은 실패입니다. 실제 호출 빈도, 작업 생산성이나 비용 절감은 이 측정만으로 추정하지 않습니다.
 
 CLI와 파일 검사 통과는 실제 Codex/Claude 모델 호출, 의미 보존 효과와 사람 평가를 증명하지 않습니다.
+
+## 반복 호출 성능 개선
+
+기존 CLI와 import API의 출력은 유지한다. 여러 입력은 `lint-batch --cases PATH` 또는 Python `review_many`로 묶을 수 있으며 같은 호출의 공통 사전과 해시를 재사용한다. 평가기 역시 각 자료를 요청 안에서 처음 읽은 뒤 같은 요청 동안 재사용한다. 모든 파일을 동시에 읽는 원자적 snapshot은 아니다. 독립 호출 사이에는 설정을 다시 읽으므로 사전 변경을 위해 프로세스를 재시작할 필요가 없다. 기존 Python `review`를 반복 호출하면 문서마다 새 native subprocess를 실행하는 비용이 남는다.
+
+개선 전 Rust 버전과 비교하려면 main7fcfbb7의 소스와 실행 파일을 따로 보존한 뒤 다음 측정을 사용한다. 실무 문서 대신 공개 합성 seed56건을 사용하며 실제 CLI/API 흐름의 전체 시간을 측정한다. 모델 호출 시간이나 전체 업무 생산성을 측정하는 도구는 아니다.
+
+```bash
+python3 tests/benchmark_operations.py --before-root /path/to/before --before-bin /path/to/before/bin/dot-stk100 --after-bin target/release/dot-stk100 --output /tmp/operations.json
+```
+
+조건별1회예열과11회교대실행의중앙값,매회출력비교와바이너리해시를기록한다. Python컨트롤러를사용하는56문서측정은반복/일괄양쪽에컨트롤러시작비용을포함한다. 개별CLI, 개별Python API와일괄호출결과를구분해보고한다.

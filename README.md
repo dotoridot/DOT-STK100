@@ -184,6 +184,8 @@ $dot-stk100 이 설명을 읽기 쉽게 다듬어줘.
 cargo build --release --locked
 ./target/release/dot-stk100 lint --source examples/source.md --candidate examples/candidate.md --format json
 ./target/release/dot-stk100 evaluate --terminology-examples
+# 여러 문서: 각 JSONL 줄에 source/candidate 본문을 넣습니다.
+./target/release/dot-stk100 lint-batch --cases pairs.jsonl
 ```
 
 결과는 수정 없이 stdout JSON으로 보고합니다. 모든 경고는 후보입니다. 종료 코드 0이나 경고 없음은 의미 보존 합격이 아닙니다. [검출 범위, 위치 규약, 오탐과 미탐](docs/LINTER.md)을 확인하세요.
