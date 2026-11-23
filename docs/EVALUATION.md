@@ -89,9 +89,9 @@
 
 ## 10. 실행한 개발 집계와 사람 검토 대기
 
-`scripts/evaluate_linter.py`는 공개 가능한 합성 56건/28계열에 대해 any-warning 발생 여부를 AI 초안 기대 라벨과 대조한다. compatible을 음성, meaning_changed를 양성으로 두고 needs_context는 이진 지표의 분모에서 제외하며 건수를 따로 기록한다. 경고의 종류가 실제 변경과 관련 없어도 양성으로 세므로 의미 검사 성능이 아니다.
+`scripts/evaluate_linter.py`는 현재 seed 파일의 공개 가능한 합성 사례에 대해 any-warning 발생 여부를 AI 초안 기대 라벨과 대조한다. compatible을 음성, meaning_changed를 양성으로 두고 needs_context는 이진 지표의 분모에서 제외하며 건수를 따로 기록한다. 경고의 종류가 실제 변경과 관련 없어도 양성으로 세므로 의미 검사 성능이 아니다.
 
-TP/FP/TN/FN, precision, recall, FPR/미탐률과 사례 ID를 보고한다. 분모가 0이면 null이다. 사람 기준 precision/recall은 null로 남긴다. 기대 라벨을 작성·수정한 도구와 같은 작업에서 수행한 개발 집계이므로 독립성도 없다. 같은 계열의 후보를 독립 표본으로 추정하는 신뢰구간이나 일반 성능 수치는 제공하지 않는다.
+TP/FP/TN/FN, precision, recall, FPR/미탐률과 사례 ID를 보고한다. 분모가 0이면 null이다. 사람 기준 precision/recall은 null로 남긴다. 기존 집계 보고서에 기록된 56건과 28계열은 그 집계의 입력 범위다. 기대 라벨을 작성·수정한 도구와 같은 작업에서 수행한 개발 집계이므로 독립성도 없다. 같은 계열의 후보를 독립 표본으로 추정하는 신뢰구간이나 일반 성능 수치는 제공하지 않는다.
 
 `eval/human-review-queue.jsonl`은 기대 라벨을 제외한 입력 쌍과 해시, 미기록 검토자/판정 필드를 가진다. 검토자는 서로의 판정을 보기 전에 독립 작성한다. 두 명의 verdict와 주장 구절, 경고별 관련성을 기록한 뒤 불일치는 제3자가 합의한다. 공개 seed 정답을 보지 않도록 안내하되 이 자료가 비공개 잠금 평가라는 주장은 하지 않는다.
 
