@@ -1,6 +1,6 @@
 {
   "name": "DOT-STK100",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "status": "stable",
   "authority": "This file is the single source for rule IDs and rule text.",
   "rules": [

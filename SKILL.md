@@ -4,7 +4,7 @@ description: 한국어 기술 설명, SDK/API 문서, 코드 리뷰, 장애 보�
 license: MIT
 metadata:
   author: dotoridot
-  version: "0.0.2"
+  version: "0.1.0"
   status: "stable-unvalidated"
   license-status: "MIT"
 ---
