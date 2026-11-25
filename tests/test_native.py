@@ -78,6 +78,8 @@ class NativeRegressionTests(unittest.TestCase):
         self.assertEqual(result['implementation_sha256'],hashlib.sha256(Path(executable()).read_bytes()).hexdigest())
         self.assertEqual(result['implementation_kind'],'rust_executable_sha256')
         self.assertEqual(result['evaluation_schema_version'],'0.2')
+        rules = json.loads((ROOT / 'rules/rules.json').read_text(encoding='utf-8'))
+        self.assertEqual(result['spec_version'], rules['version'])
         self.assertIsNone(result['human_precision']);self.assertIsNone(result['human_recall'])
 
     def test_missing_native_never_builds_or_downloads(self):

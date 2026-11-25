@@ -15,7 +15,6 @@ import subprocess
 import sys
 import tempfile
 
-ROOT = Path(__file__).resolve().parents[1]
 BASELINE = '71737d3d10885c77824defb35675405fa5657adb'
 ORACLE = r'''
 import dataclasses,json,sys
@@ -120,14 +119,15 @@ def verify_baseline(path):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--baseline',required=True,type=Path);p.add_argument('--binary',type=Path);p.add_argument('--capture',type=Path);p.add_argument('--section',choices=['all','lint','render','package'],default='all');a=p.parse_args()
-    provenance=verify_baseline(a.baseline)
-    oracle=subprocess.Popen([sys.executable,'-u','-c',ORACLE,str(a.baseline.resolve())],stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True)
+    baseline_root = a.baseline.resolve()
+    provenance=verify_baseline(baseline_root)
+    oracle=subprocess.Popen([sys.executable,'-u','-c',ORACLE,str(baseline_root)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True)
     rows=[];failures=[];deltas=[]
     def compare(op,args):
         item={'op':op,'args':args};oracle.stdin.write(json.dumps(item)+'\n');oracle.stdin.flush()
         expected=json.loads(oracle.stdout.readline());row={**item,'expected':expected};rows.append(row)
         if a.binary:
-            run=subprocess.run([str(a.binary.resolve()),'bridge',op,'--root',str(ROOT)],input=json.dumps(args),text=True,capture_output=True)
+            run=subprocess.run([str(a.binary.resolve()),'bridge',op,'--root',str(baseline_root)],input=json.dumps(args),text=True,capture_output=True)
             if 'error' in expected:
                 diagnostic_matches=run.stderr.strip()=='ERROR: '+expected['error']
                 # CPython/OS versions use different wording for the same rejected NUL path.
